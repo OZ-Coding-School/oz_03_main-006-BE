@@ -3,7 +3,7 @@
 FROM python:3.11-alpine3.19
 
 # LABEL 명령어는 이미지에 메타데이터를 추가합니다. 여기서는 이미지의 유지 관리자를 "seopftware"로 지정하고 있습니다.
-LABEL maintainer="han"
+LABEL maintainer="han_cycle"
 
 # 환경 변수 PYTHONUNBUFFERED를 1로 설정합니다. 
 # 이는 Python이 표준 입출력 버퍼링을 비활성화하게 하여, 로그가 즉시 콘솔에 출력되게 합니다. 
@@ -14,9 +14,9 @@ ENV PYTHONUNBUFFERED 1
 # 이 파일은 필요한 Python 패키지들을 명시합니다.
 COPY ./requirements.txt /tmp/requirements.txt
 COPY ./requirements.dev.txt /tmp/requirements.dev.txt
-COPY ./app /app
+COPY ./han_cycle /han_cycle
 
-WORKDIR /app
+WORKDIR /han_cycle
 EXPOSE 8000
 
 ARG DEV=false
