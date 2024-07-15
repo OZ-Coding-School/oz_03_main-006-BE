@@ -3,5 +3,5 @@ djangorestframework>=3.14.0,<4.0.0
 psycopg2-binary
 django-allauth
 requests
-djangorestframework-jwt
+djangorestframework-simplejwt
 cryptography
