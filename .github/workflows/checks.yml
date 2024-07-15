@@ -10,13 +10,27 @@
         runs-on : ubuntu-20.04 #작업 환경
         steps : #작업 단계
           - name : Login in to Docker Hub
-            uses : docker/login-action@v1
+            uses : docker/login-action@v2
             with : 
               username : ${{ secrets.DOCKERHUB_USER }}
               password : ${{ secrets.DOCKERHUB_TOKEN }}
           - name : Check out - pull repository code #Github 코드를 가져오는 역할
             uses : actions/checkout@v2
+
+          - name: Set up Docker Buildx
+            uses: docker/setup-buildx-action@v2
+
+          - name: Install dependencies  # requirements.txt install 역할
+            run: |  # Multi-line command for readability
+              python -m pip install --upgrade pip
+              pip install -r requirements.txt   
+    
+          - name: Build and start Docker Compose services
+            run: docker-compose up -d --build
+
           - name : Run TestCode
             run : docker-compose run --rm app sh -c 'python manage.py test'
+
+            
           # - name : Run Flake8 for Lint Check #pep8 스타일 가이드를 잘 준수하고 있는지 체크
           #   run : docker-compose run --rm app sh -c 'flake8'
