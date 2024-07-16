@@ -14,9 +14,9 @@ ENV PYTHONUNBUFFERED 1
 # 이 파일은 필요한 Python 패키지들을 명시합니다.
 COPY ./requirements.txt /tmp/requirements.txt
 COPY ./requirements.dev.txt /tmp/requirements.dev.txt
-COPY ./han_cycle /han_cycle
+COPY ./han_cycle /app
 
-WORKDIR /han_cycle
+WORKDIR /app
 EXPOSE 8000
 
 ARG DEV=false
