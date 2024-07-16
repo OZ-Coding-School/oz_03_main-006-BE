@@ -143,6 +143,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 
+
 #django-authentication
 AUTHENTICATION_BACKENDS = [
     # Needed to login by username in Django admin, regardless of `allauth`
