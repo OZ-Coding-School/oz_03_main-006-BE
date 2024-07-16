@@ -8,6 +8,9 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.12"
 django = "^5.0.7"
+selenium = "^4.22.0"
+webdriver-manager = "^4.0.1"
+psycopg = "^3.2.1"
 
 
 [build-system]
