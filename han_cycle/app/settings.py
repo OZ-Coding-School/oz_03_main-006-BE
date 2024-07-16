@@ -86,7 +86,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'han_cycle.wsgi.application'
+WSGI_APPLICATION = 'app.wsgi.application'
 
 
 # Database
