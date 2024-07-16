@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'boards.apps.BoardsConfig',
     'locations',
     'profiles',
-    'scrapping',
+    'scraping',
     'users',
     'weather',
 
