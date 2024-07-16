@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 from dotenv import load_dotenv
 import os
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -41,19 +42,22 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
     'boards.apps.BoardsConfig',
     'locations',
     'profiles',
     'scraping',
     'users',
     'weather',
+    #django-authentication
+    'django.contrib.sites',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
-    'allauth.socialaccount.providers.naver',
     'allauth.socialaccount.providers.kakao',
+    'allauth.socialaccount.providers.naver',
+    'rest_framework',
+    'rest_framework_simplejwt'
 
 ]
 
@@ -68,12 +72,16 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
 ]
 
+#django-authentication
+SITE_ID = 1
+SOCIALACCOUNT_LOGIN_ON_GET = True
+
 ROOT_URLCONF = 'app.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'app' / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -188,9 +196,30 @@ ACCOUNT_EMAIL_REQUIRED = True
 
 
 
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 WSGI_APPLICATION = 'app.wsgi.application'
+
+#jwt_authentication token
+REST_FRAMEWORK = {
+    #authenication is required
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    #jwt authentication 사용
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME':timedelta(minutes=60), #access token expires in 60 minutes
+    'SLIDING_TOKEN_REFRESH_LIFETIME':timedelta(days=1),
+    'SLIDING_TOKEN_LIFETIME':timedelta(days=30),
+    'SLIDING_TOKEN_REFRESH_LIFETIME_LATE_USER':timedelta(days=1),
+    'SLIDING_TOKEN_LIFETIME_LATE_USER':timedelta(days=30),
+}
