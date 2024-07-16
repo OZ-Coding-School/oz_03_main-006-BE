@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+from dotenv import load_dotenv
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -83,14 +85,15 @@ WSGI_APPLICATION = 'han_cycle.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'han_cycle',  # 사용자명
-        'PASSWORD': 'han_cycle',
-        'HOST': 'han-cycle.c7064gcswmyo.ap-northeast-2.rds.amazonaws.com',
-        'PORT': '5432',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
     }
 }
 
@@ -132,6 +135,53 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+<<<<<<< Updated upstream:han_cycle/app/settings.py
+=======
+
+#django-authentication
+AUTHENTICATION_BACKENDS = [
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    },
+    'naver': {
+        'SCOPE': [
+            'name',
+            'email',
+            'profile_image',
+        ]
+    },
+    'kakao': {
+        'SCOPE': [
+            'profile_nickname',
+            'profile_image',
+            'account_email',
+        ]
+    }
+}
+
+
+
+#backend check the login for test
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+#make email is required for login
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_REQUIRED = True
+
+
+>>>>>>> Stashed changes:han_cycle/han_cycle/settings.py
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
