@@ -45,9 +45,15 @@ INSTALLED_APPS = [
     'boards.apps.BoardsConfig',
     'locations',
     'profiles',
-    'scrapping',
+    'scraping',
     'users',
     'weather',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.naver',
+    'allauth.socialaccount.providers.kakao',
 
 ]
 
@@ -59,9 +65,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
-ROOT_URLCONF = 'han_cycle.urls'
+ROOT_URLCONF = 'app.urls'
 
 TEMPLATES = [
     {
@@ -135,8 +142,6 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-<<<<<<< Updated upstream:han_cycle/app/settings.py
-=======
 
 #django-authentication
 AUTHENTICATION_BACKENDS = [
@@ -181,8 +186,10 @@ ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_REQUIRED = True
 
 
->>>>>>> Stashed changes:han_cycle/han_cycle/settings.py
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+WSGI_APPLICATION = 'app.wsgi.application'
