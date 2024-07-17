@@ -8,10 +8,12 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.exceptions import NotAuthenticated
 from django.contrib.auth.decorators import login_required
 
+
 class UserAPI(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [AllowAny]
 
+#recieve information with token
     def get(self, request):
         user = request.user
         if not user.is_authenticated:
@@ -24,6 +26,7 @@ class UserAPI(APIView):
             "profile_image": user.profile_image
         }) 
 
+#recieve token with sign in
     def post(self, request):
         username = request.data.get("username","")
         password = request.data.get("password","")
