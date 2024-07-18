@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     'scraping',
     'users',
     'weather',
-    #django-authentication
+    #django-authentication apps
     'django.contrib.sites',
     'allauth',
     'allauth.account',
@@ -57,7 +57,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.kakao',
     'allauth.socialaccount.providers.naver',
     'rest_framework',
-    'rest_framework_simplejwt'
+    'rest_framework_simplejwt',
 
 ]
 
@@ -100,6 +100,7 @@ WSGI_APPLICATION = 'app.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+load_dotenv()
 
 DATABASES = {
     'default': {
@@ -171,7 +172,7 @@ SOCIALACCOUNT_PROVIDERS = {
     },
     'naver': {
         'SCOPE': [
-            'name',
+            'username',
             'email',
             'profile_image',
         ]
@@ -193,7 +194,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 #make email is required for login
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_REQUIRED = True
-
+SOCIALACCOUNT_ADAPTER = 'app.adapters.CustomSocialAccountAdapter'
 
 
 
