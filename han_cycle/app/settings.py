@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     'profiles',
     'scraping',
     'weather',
-    'api',
 
 ]
 
