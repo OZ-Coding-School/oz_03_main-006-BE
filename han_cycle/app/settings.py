@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -32,7 +33,6 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'common',
-    'api',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -41,11 +41,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'boards.apps.BoardsConfig',
+    'users',
     'locations',
     'profiles',
     'scraping',
-    'users',
     'weather',
+    'api',
 
 ]
 
@@ -58,6 +59,16 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+SWAGGER_SETTINGS = { 
+    'SECURITY_DEFINITIONS': 
+    { 
+        'Bearer': 
+        { 
+            'type': 'apiKey', 'name': 'Authorization', 'in': 'header'
+        } 
+     } 
+}
+
 
 ROOT_URLCONF = 'app.urls'
 
@@ -86,11 +97,11 @@ WSGI_APPLICATION = 'app.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'han_cycle',  # 사용자명
-        'PASSWORD': 'han_cycle',
-        'HOST': 'han-cycle.c7064gcswmyo.ap-northeast-2.rds.amazonaws.com',
-        'PORT': '5432',
+        'NAME': config('POSTGRES_DB'),
+        'USER': config('POSTGRES_USER'),
+        'PASSWORD': config('POSTGRES_PASSWORD'),
+        'HOST': config('POSTGRES_HOST'),
+        'PORT': config('DB_PORT'),
     }
 }
 

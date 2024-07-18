@@ -1,12 +1,21 @@
-# version: "3.11"
+#version: '3.8'
+
 services:
   app:
     build:
       context: .
       args:
         - DEV=true
-    ports:
-      - "8000:8000"
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     volumes:
       - ./han_cycle:/app
-    command: sh -c "python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - DJANGO_SETTINGS_MODULE=app.settings
+      - DEBUG=1
+    # depends_on:  # db 서비스 제거로 인해 depends_on 설정도 제거
+    #  - db
+    user: django-user
