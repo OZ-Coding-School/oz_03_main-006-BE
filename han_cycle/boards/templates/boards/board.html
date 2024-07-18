@@ -1,0 +1,17 @@
+<html>
+    <head>
+        <title>Blog List</title>
+    </head>
+    <body>
+        <h1>게시판 페이지입니다</h1>
+        <button><a href="create/">글쓰기</a></button>
+        <table>
+        {% for list in postlist %}
+        <ul>
+            <li><a href="{{list.pk}}">{{list.title}}</a></li>
+        </ul>
+            {% endfor %}
+        </table>
+        
+        </body>
+    </html>

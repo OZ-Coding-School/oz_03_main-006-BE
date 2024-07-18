@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>여행 게시물 등록</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        form {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input[type="text"], select, input[type="file"], input[type="date"], textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            box-sizing: border-box;
+        }
+        .tags {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        .tags input[type="checkbox"] {
+            display: none;
+        }
+        .tags label {
+            padding: 5px 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .tags input[type="checkbox"]:checked + label {
+            background-color: #007bff;
+            color: white;
+        }
+        .buttons {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .submit-button {
+            background-color: #007bff;
+            color: white;
+        }
+        .cancel-button {
+            background-color: #ccc;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>여행 게시물 등록</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <label for="title">제목</label>
+        <input type="text" id="title" name="title" placeholder="제목을 입력하세요" required>
+
+        <label for="region">지역</label>
+        <select id="region" name="region" required>
+            <option value="">지역 선택</option>
+            <!-- 지역 선택지 -->
+            <option value="서울">서울</option>
+            <option value="부산">부산</option>
+            <option value="제주">제주</option>
+            <!-- 필요한 지역을 추가하세요 -->
+        </select>
+
+        <label for="tags">태그</label>
+        <div class="tags">
+            <input type="checkbox" id="tag1" name="tag" value="이동경로">
+            <label for="tag1">이동경로</label>
+            
+            <input type="checkbox" id="tag2" name="tag" value="관광지">
+            <label for="tag2">관광지</label>
+            
+            <input type="checkbox" id="tag3" name="tag" value="맛집">
+            <label for="tag3">맛집</label>
+            
+            <input type="checkbox" id="tag4" name="tag" value="숙소">
+            <label for="tag4">숙소</label>
+            
+            <input type="checkbox" id="tag5" name="tag" value="지역축제">
+            <label for="tag5">지역축제</label>
+        </div>
+
+        <label for="start_date">여행 기간</label>
+        <input type="date" id="start_date" name="travel_start_date" required>
+        ~
+        <input type="date" id="end_date" name="travel_end_date" required>
+
+        <label for="content">내용</label>
+        <textarea id="content" name="body" rows="10" required></textarea>
+
+        <div class="buttons">
+            <button type="button" class="cancel-button" onclick="window.history.back();">취소</button>
+            <button type="submit" class="submit-button">등록</button>
+        </div>
+    </form>
+</body>
+</html>

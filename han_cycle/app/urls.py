@@ -16,8 +16,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),  # api 앱의 urls.py 포함
+    path('posts/', include('boards.urls')),
 ]
