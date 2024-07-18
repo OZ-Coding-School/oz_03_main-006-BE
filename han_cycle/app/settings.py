@@ -58,12 +58,15 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
 SWAGGER_SETTINGS = { 
     'SECURITY_DEFINITIONS': 
     { 
         'Bearer': 
         { 
-            'type': 'apiKey', 'name': 'Authorization', 'in': 'header'
+            'type': 'apiKey', 
+            'name': 'Authorization', 
+            'in': 'header'
         } 
      } 
 }
