@@ -58,6 +58,8 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.naver',
     'rest_framework',
     'rest_framework_simplejwt',
+    'social_django',
+    'rest_framework.authtoken',
 
 ]
 
@@ -81,7 +83,7 @@ ROOT_URLCONF = 'app.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'app' / 'templates'],
+        'DIRS': [BASE_DIR / 'users' / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -194,8 +196,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 #make email is required for login
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_REQUIRED = True
-SOCIALACCOUNT_ADAPTER = 'app.adapters.CustomSocialAccountAdapter'
-
+SOCIALACCOUNT_ADAPTER = 'users.adapters.CustomSocialAccountAdapter'
+LOGIN_REDIRECT_URL = '/users/accounts/profile/'
 
 
 # Default primary key field type

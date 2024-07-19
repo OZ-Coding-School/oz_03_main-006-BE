@@ -4,6 +4,10 @@ from allauth.socialaccount.models import SocialAccount
 
 class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
 
+    def get_login_redirect_url(self, request):
+        return '/users/accounts/profile/'
+
+
     def populate_user(self, request, sociallogin, data):
         user = super().populate_user(request, sociallogin, data)
         if sociallogin.account.provider == 'naver':
