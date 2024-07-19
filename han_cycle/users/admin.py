@@ -1,10 +1,10 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
-from .models import Profile
+from .models import User
 
 class ProfileInline(admin.StackedInline):
-    model = Profile
+    model = User
     can_delete = False  # This is the correct attribute to prevent deletion
 
 class CustomUserAdmin(UserAdmin):
