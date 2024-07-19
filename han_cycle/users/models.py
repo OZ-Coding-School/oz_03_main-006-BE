@@ -1,12 +1,14 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.utils import timezone
 
-class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    nickname = models.CharField(max_length=100, blank=True)
-    email = models.EmailField()
-    password = models.CharField(max_length=128)
-    created_at = models.DateTimeField(auto_now_add=True)
+class User(models.Model):
+    user_id = models.AutoField(primary_key=True)  # Primary key, auto-incrementing integer
+    email = models.EmailField(unique=True)  # Unique email field
+    password = models.CharField(max_length=128)  # Password field
+    provider = models.CharField(max_length=100)  # Provider field, not null
+    social_id = models.CharField(max_length=100)  # Social ID field, not null
+    nickname = models.CharField(max_length=100)  # Nickname field, not null
+    created_at = models.DateTimeField(default=timezone.now)  # Timestamp with default value of now
 
     def __str__(self):
-        return self.nickname or self.user.username
+        return self.nickname or self.email
