@@ -1,6 +1,8 @@
 from django.contrib import admin
-from .models import Board
+# 게시글(Post) Model을 불러옵니다
+from .models import Post, Comment
 
-@admin.register(Board)
-class BoardAdmin(admin.ModelAdmin):
-	pass
+# Register your models here.
+# 관리자(admin)가 게시글(Post)에 접근 가능
+admin.site.register(Post)
+admin.site.register(Comment)

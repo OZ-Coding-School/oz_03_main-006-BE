@@ -12,6 +12,13 @@ selenium = "^4.22.0"
 webdriver-manager = "^4.0.1"
 psycopg = "^3.2.1"
 djangorestframework = "^3.15.2"
+social-auth-app-django = "^5.4.2"
+django-storages = "^1.14.4"
+boto3 = "^1.34.145"
+pillow = "^10.4.0"
+django-allauth = "^0.63.6"
+rest-framework-simplejwt = "^0.0.2"
+djangorestframework-simplejwt = "^5.3.1"
 
 
 [build-system]
