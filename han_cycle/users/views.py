@@ -54,7 +54,7 @@ class UserAPI(APIView):
             "first_name": user.first_name,
             "last_name": user.last_name,
             "email": user.email,
-            "profile_image": user.profile_image
+            #"profile_image": user.profile_image
         }) 
 
 #recieve token with sign in

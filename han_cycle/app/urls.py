@@ -22,4 +22,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),  # api 앱의 urls.py 포함
     path('users/', include('users.urls')),
+    path('posts/', include('boards.urls')),
 ]

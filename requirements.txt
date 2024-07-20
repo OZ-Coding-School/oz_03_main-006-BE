@@ -6,3 +6,8 @@ requests
 djangorestframework-simplejwt
 cryptography
 python-dotenv
+social-auth-app-django
+django-storages >= 1.14.0
+boto3 == 1.34.144
+pillow
+djangorestframework-simplejwt
