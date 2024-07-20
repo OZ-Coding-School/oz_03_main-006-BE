@@ -45,7 +45,6 @@ INSTALLED_APPS = [
     "boards.apps.BoardsConfig",
     "locations",
     "profiles",
-    "scraping",
     "users",
     "weather",
     # django-authentication apps
@@ -61,6 +60,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "social_django",
     "rest_framework.authtoken",
+    "drf_yasg",
 ]
 
 MIDDLEWARE = [
@@ -73,6 +73,13 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
 ]
+
+# 스웨거 세팅
+SWAGGER_SETTINGS = {
+    "SECURITY_DEFINITIONS": {
+        "Bearer": {"type": "apiKey", "name": "Authorization", "in": "header"}
+    }
+}
 
 # django-authentication
 SITE_ID = 1
