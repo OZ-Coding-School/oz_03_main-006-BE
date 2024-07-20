@@ -74,12 +74,17 @@ MIDDLEWARE = [
     "allauth.account.middleware.AccountMiddleware",
 ]
 
-# 스웨거 세팅
+# 스웨거 세팅, 커스텀유저 모델 허용가능으로 수정
 SWAGGER_SETTINGS = {
     "SECURITY_DEFINITIONS": {
         "Bearer": {"type": "apiKey", "name": "Authorization", "in": "header"}
-    }
+    },
+    "DEFAULT_AUTO_SCHEMA_CLASS": "drf_yasg.inspectors.SwaggerAutoSchema",
+    "USE_SESSION_AUTH": False,
 }
+
+# # 유저모델 커스텀
+# AUTH_USER_MODEL = "users.User"
 
 # django-authentication
 SITE_ID = 1
