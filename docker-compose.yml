@@ -31,5 +31,26 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  celery_worker:  # Celery worker 서비스 추가
+    build: .
+    command: celery -A han_cycle worker -l info
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - db
+
+  celery_beat:  # Celery beat 서비스 추가(자동화 API요청_날씨)
+    build: .
+    command: celery -A han_cycle beat -l info
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - db
+      
+  redis:
+    image: redis:alpine      #celery 브로커
+
 volumes:
   postgres_data:

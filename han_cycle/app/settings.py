@@ -14,6 +14,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+from celery.schedules import crontab  # crontab import 추가
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -251,3 +252,24 @@ DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 
 # Media settings
 MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/"
+
+# 날씨 크롤링 요청세팅
+CELERY_BROKER_URL = (
+    "redis://redis:6379/0"  # Redis broker 사용 (Docker Compose의 redis 서비스 이름)
+)
+CELERY_RESULT_BACKEND = "redis://redis:6379/0"
+CELERY_ACCEPT_CONTENT = ["application/json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "Asia/Seoul"
+
+# 기상청 API요청
+KOREA_WEATHER_API_KEY = "OejFCZQLKQCvjrstrDIun/1WXSaBwtjQggiG9OqbwmB8lQ/lPap09spPZ1uy6mwdezb8xvR9y/z8N+zGTmUU2g=="
+
+# 날씨 6시간 마다 API요청
+CELERY_BEAT_SCHEDULE = {
+    "scrape-weather-data-every-six-hours": {
+        "task": "weather.tasks.scrape_weather_data",
+        "schedule": crontab(minute="*/360"),
+    },
+}
