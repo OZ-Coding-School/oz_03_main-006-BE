@@ -84,7 +84,7 @@ SWAGGER_SETTINGS = {
 }
 
 # # 유저모델 커스텀
-# AUTH_USER_MODEL = "users.User"
+AUTH_USER_MODEL = "users.User"
 
 # django-authentication
 SITE_ID = 1

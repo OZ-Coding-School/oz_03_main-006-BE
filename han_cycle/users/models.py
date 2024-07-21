@@ -1,7 +1,9 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import AbstractUser
 
-class User(models.Model):
+
+class User(AbstractUser):
     user_id = models.AutoField(primary_key=True)  # Primary key, auto-incrementing integer
     email = models.EmailField(unique=True)  # Unique email field
     password = models.CharField(max_length=128)  # Password field

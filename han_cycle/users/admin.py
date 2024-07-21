@@ -3,17 +3,9 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 from .models import User
 
-class ProfileInline(admin.StackedInline):
-    model = User
-    can_delete = False  # This is the correct attribute to prevent deletion
 
-
-class CustomUserAdmin(UserAdmin):
-    inlines = (ProfileInline,)
-
-
-admin.site.unregister(User)
-admin.site.register(User, CustomUserAdmin)
+# admin.site.unregister(User)
+admin.site.register(User)
 
 # # django.contrib.auth.models에서 User 모델을 import 하지 않고, 커스텀 User 모델이 있는 users.models에서 import
 # from django.contrib import admin

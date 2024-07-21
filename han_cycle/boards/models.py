@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-from users.models import Profile
+from users.models import User
 #파일이름 겹치지 않도록 설정해주는 함수
 def image_upload_path(instance, filename):
     # filename은 업로드된 파일의 이름입니다.
@@ -11,7 +11,7 @@ def image_upload_path(instance, filename):
 
 class Post(models.Model):
     
-    user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='posts')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
     title = models.CharField(max_length=200, null=False)
     body = models.TextField()
     tag = models.CharField(max_length=200, null=False)
@@ -27,7 +27,7 @@ class Post(models.Model):
 
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
-    user = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
