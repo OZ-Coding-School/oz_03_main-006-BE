@@ -15,14 +15,13 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path, include
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from users.views import UserAPI, ProfileView, UserRetrieveUpdateAPIView
+from .views import RegisterView, LoginView, UserView, LogoutView
 
 urlpatterns = [
     path('accounts/', include('allauth.urls')),  # Social login
-    path("api/token/", TokenObtainPairView.as_view(), name="login"),
-    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),  # Added trailing slash for consistency
-    path("api/user/", UserAPI.as_view(), name="user"),  # Added trailing slash for consistency
-    path("accounts/profile/", ProfileView, name="profile"),  # Corrected usage of ProfileView
-    path('accounts/update/',UserRetrieveUpdateAPIView.as_view(), name="update"),
+    path('accounts/register', RegisterView.as_view()),
+    path('accounts/login', LoginView.as_view()),
+    path('accounts/user',UserView.as_view()),  #get token by cookie
+    path('accounts/logout',LogoutView.as_view())
+
 ]
