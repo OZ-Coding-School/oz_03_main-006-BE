@@ -22,6 +22,6 @@ urlpatterns = [
     path('accounts/register', RegisterView.as_view()),
     path('accounts/login', LoginView.as_view()),
     path('accounts/user',UserView.as_view()),  #get token by cookie
-    path('accounts/logout',LogoutView.as_view())
+    path('accounts/logout',LogoutView.as_view()),
 
 ]
