@@ -1,12 +1,13 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.utils import timezone
+from django.contrib.auth.models import AbstractUser
 
-class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    nickname = models.CharField(max_length=100, blank=True)
-    email = models.EmailField()
-    password = models.CharField(max_length=128)
-    created_at = models.DateTimeField(auto_now_add=True)
+class User(AbstractUser):
+    email = models.EmailField(unique=True)  # Unique
+    provider = models.CharField(max_length=100)  # Not null
+    nickname = models.CharField(max_length=100)  # Unique, not null
+    created_at = models.DateTimeField(default=timezone.now)  # Timestamp with default value of now
 
-    def __str__(self):
-        return self.nickname or self.user.username
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []  # Corrected this to plural
+    

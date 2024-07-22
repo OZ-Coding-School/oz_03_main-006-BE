@@ -58,10 +58,11 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.naver",
     "storages",
     "rest_framework",
-    "rest_framework_simplejwt",
     "social_django",
     "rest_framework.authtoken",
+    "corsheaders",
     "drf_yasg",
+    "tinymce",
 ]
 
 MIDDLEWARE = [
@@ -75,12 +76,17 @@ MIDDLEWARE = [
     "allauth.account.middleware.AccountMiddleware",
 ]
 
-# 스웨거 세팅
+# 스웨거 세팅, 커스텀유저 모델 허용가능으로 수정
 SWAGGER_SETTINGS = {
     "SECURITY_DEFINITIONS": {
         "Bearer": {"type": "apiKey", "name": "Authorization", "in": "header"}
-    }
+    },
+    "DEFAULT_AUTO_SCHEMA_CLASS": "drf_yasg.inspectors.SwaggerAutoSchema",
+    "USE_SESSION_AUTH": False,
 }
+
+# # 유저모델 커스텀
+AUTH_USER_MODEL = "users.User"
 
 # django-authentication
 SITE_ID = 1
@@ -110,7 +116,7 @@ WSGI_APPLICATION = "app.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-load_dotenv()
+load_dotenv(override=True)
 
 DATABASES = {
     "default": {
@@ -212,25 +218,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 WSGI_APPLICATION = "app.wsgi.application"
 
-# jwt_authentication token
-REST_FRAMEWORK = {
-    # authenication is required
-    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
-    # jwt authentication 사용
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
-}
-
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(
-        minutes=60
-    ),  # access token expires in 60 minutes
-    "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=1),
-    "SLIDING_TOKEN_LIFETIME": timedelta(days=30),
-    "SLIDING_TOKEN_REFRESH_LIFETIME_LATE_USER": timedelta(days=1),
-    "SLIDING_TOKEN_LIFETIME_LATE_USER": timedelta(days=30),
-}
 
 # S3 setting
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
@@ -273,3 +260,10 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": crontab(minute="*/360"),
     },
 }
+
+# override defualt user django
+AUTH_USER_MODEL = "users.User"
+
+# front-end ports to access our app
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True  # if it's false, front-end can't get cookie
