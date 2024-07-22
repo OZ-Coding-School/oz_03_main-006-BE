@@ -20,6 +20,9 @@ django-allauth = "^0.63.6"
 rest-framework-simplejwt = "^0.0.2"
 djangorestframework-simplejwt = "^5.3.1"
 drf-yasg = "^1.21.7"
+django-tinymce = "^4.1.0"
+django-cors-headers = "^4.4.0"
+setuptools = "^71.1.0"
 
 
 [build-system]
