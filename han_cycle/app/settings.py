@@ -57,10 +57,11 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.naver",
     "storages",
     "rest_framework",
-    "rest_framework_simplejwt",
     "social_django",
     "rest_framework.authtoken",
+    "corsheaders",
     "drf_yasg",
+    'tinymce',
 ]
 
 MIDDLEWARE = [
@@ -84,7 +85,7 @@ SWAGGER_SETTINGS = {
 }
 
 # # 유저모델 커스텀
-# AUTH_USER_MODEL = "users.User"
+AUTH_USER_MODEL = "users.User"
 
 # django-authentication
 SITE_ID = 1
@@ -216,25 +217,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 WSGI_APPLICATION = "app.wsgi.application"
 
-# jwt_authentication token
-REST_FRAMEWORK = {
-    # authenication is required
-    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
-    # jwt authentication 사용
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
-}
 
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(
-        minutes=60
-    ),  # access token expires in 60 minutes
-    "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=1),
-    "SLIDING_TOKEN_LIFETIME": timedelta(days=30),
-    "SLIDING_TOKEN_REFRESH_LIFETIME_LATE_USER": timedelta(days=1),
-    "SLIDING_TOKEN_LIFETIME_LATE_USER": timedelta(days=30),
-}
+
 
 # S3 setting
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
@@ -256,3 +240,10 @@ DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 
 # Media settings
 MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/"
+
+#override defualt user django
+AUTH_USER_MODEL='users.User'
+
+#front-end ports to access our app
+CORS_ORIGIN_ALLOW_ALL=True
+CORS_ALLOW_CREDENTIALS=True #if it's false, front-end can't get cookie
