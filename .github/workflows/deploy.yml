@@ -38,12 +38,13 @@ jobs:
             EOF
 
       - name: Execute deploy script on EC2
-        ssh:
+        uses: appleboy/ssh-action@v0.1.1  # uses 키 사용
+        with:
           host: ${{ secrets.EC2_HOST }}
           username: ec2-user
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          script: |
-            cd /home/ec2-user/oz_03_main-006-BE 
+          script: |  # script 키 사용
+            cd /home/ec2-user/oz_03_main-006-BE
             docker-compose down
             docker-compose build --no-cache 
             docker-compose up -d
