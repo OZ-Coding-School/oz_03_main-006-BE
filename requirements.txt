@@ -20,3 +20,4 @@ django-celery-beat #주기적인 크롤링요청
 django-tinymce
 django-cors-headers
 setuptools
+elasticsearch-dsl #검색

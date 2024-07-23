@@ -31,26 +31,37 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  celery_worker:  # Celery worker 서비스 추가
-    build: .
-    command: celery -A han_cycle worker -l info
-    env_file:
-      - .env
-    depends_on:
-      - redis
-      - db
+  # celery_worker:  # Celery worker 서비스 추가
+  #   build: .
+  #   command: celery -A han_cycle.app worker -l info
+  #     - .env
+  #   depends_on:
+  #     - redis
+  #     - db
 
-  celery_beat:  # Celery beat 서비스 추가(자동화 API요청_날씨)
-    build: .
-    command: celery -A han_cycle beat -l info
-    env_file:
-      - .env
-    depends_on:
-      - redis
-      - db
+  # celery_beat:  # Celery beat 서비스 추가(자동화 API요청_날씨)
+  #   build: .
+  #   command: celery -A han_cycle.app beat -l info
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     - redis
+  #     - db
       
-  redis:
-    image: redis:alpine      #celery 브로커
+  # redis:
+  #   image: redis:alpine      #celery 브로커
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.1
+    environment:
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
 
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.1
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
 volumes:
   postgres_data:
