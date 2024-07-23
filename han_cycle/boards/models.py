@@ -23,15 +23,14 @@ class Post(models.Model):
     view_count = models.PositiveIntegerField(default=0)
     travel_start_date = models.DateField(null=True, blank=True)
     travel_end_date = models.DateField(null=True, blank=True)
-    thumbnail=models.ImageField(upload_to='image_upload_path')
+    thumbnail=models.ImageField(upload_to=image_upload_path)
 
     def __str__(self):
         return self.title
     
 class Image(models.Model):
     board = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='images', null=True, blank=True)
-    image = models.ImageField(upload_to='image_upload_path')
-    is_representative = models.BooleanField(default=False)
+    image = models.ImageField(upload_to=image_upload_path)
     created_at = models.DateTimeField(auto_now_add=True)
 
 class Comment(models.Model):
