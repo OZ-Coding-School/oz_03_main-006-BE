@@ -12,6 +12,7 @@ services:
       - ./han_cycle:/app
     command: sh -c "python manage.py runserver 0.0.0.0:8000"
     environment:
+      # DATABASE_URL=postgresql+psycopg2://@awssecretsmanager:han_cycle/DB/postgrSQL?region=ap-northeast-2
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}

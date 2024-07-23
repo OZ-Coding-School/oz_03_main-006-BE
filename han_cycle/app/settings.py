@@ -14,6 +14,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+# import dj_database_url
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -61,7 +62,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "corsheaders",
     "drf_yasg",
-    'tinymce',
+    "tinymce",
 ]
 
 MIDDLEWARE = [
@@ -128,6 +129,7 @@ DATABASES = {
     }
 }
 
+#
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -218,8 +220,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 WSGI_APPLICATION = "app.wsgi.application"
 
 
-
-
 # S3 setting
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
@@ -241,9 +241,9 @@ DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 # Media settings
 MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/"
 
-#override defualt user django
-AUTH_USER_MODEL='users.User'
+# override defualt user django
+AUTH_USER_MODEL = "users.User"
 
-#front-end ports to access our app
-CORS_ORIGIN_ALLOW_ALL=True
-CORS_ALLOW_CREDENTIALS=True #if it's false, front-end can't get cookie
+# front-end ports to access our app
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True  # if it's false, front-end can't get cookie
