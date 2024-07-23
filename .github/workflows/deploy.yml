@@ -29,10 +29,10 @@ jobs:
           script: |
             cd /home/ec2-user/oz_03_main-006-BE  
             cat << EOF > .env
-            POSTGRES_DB=${{ secrets.DB_NAME }}
-            POSTGRES_USER=${{ secrets.DB_USER }}
-            POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }}
-            POSTGRES_HOST=${{ secrets.DB_HOST }}
+            DB_NAME=${{ secrets.DB_NAME }}
+            DB_USER=${{ secrets.DB_USER }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            DB_HOST=${{ secrets.DB_HOST }}
             DB_PORT=5432
             DJANGO_SETTINGS_MODULE=han_cycle.app.settings
             EOF
