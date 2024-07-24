@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "boards.apps.BoardsConfig",
+    "corsheaders",
     "locations",
     "profiles",
     "users",
@@ -59,12 +60,13 @@ INSTALLED_APPS = [
     "rest_framework",
     "social_django",
     "rest_framework.authtoken",
-    "corsheaders",
     "drf_yasg",
     "tinymce",
 ]
 
+
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -83,6 +85,12 @@ SWAGGER_SETTINGS = {
     "DEFAULT_AUTO_SCHEMA_CLASS": "drf_yasg.inspectors.SwaggerAutoSchema",
     "USE_SESSION_AUTH": False,
 }
+
+# CORS 설정
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://43.203.170.167:8000",
+]
 
 # # 유저모델 커스텀
 AUTH_USER_MODEL = "users.User"
