@@ -1,7 +1,6 @@
  #version: "3.11"
-
 services:
-  app:
+  app: 
     build:
       context: .
       args:

@@ -14,6 +14,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+from celery import Celery
 from celery.schedules import crontab  # crontab import 추가
 from dotenv import load_dotenv
 
