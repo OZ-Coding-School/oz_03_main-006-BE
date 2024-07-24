@@ -1,19 +1,19 @@
 django>=4.2.0,<4.3.0
 djangorestframework>=3.14.0,<4.0.0
 psycopg2-binary
-django-allauth
+django-allauth # allauth social login
 requests
-djangorestframework-simplejwt
 cryptography
-python-dotenv
-social-auth-app-django
+python-dotenv #.env file
+social-auth-app-django #allauth social login
 django-storages >= 1.14.0
 boto3 == 1.34.144
 pillow
-djangorestframework-simplejwt
 drf-yasg #swagger
 requests #스크래핑
 beautifulsoup4 #스크래핑
 celery #스크래핑
 flower #스크래핑
 django-celery-beat #주기적인 크롤링요청
+PyJWT #API token
+django-cors-headers #for the case, front-end has different port than django

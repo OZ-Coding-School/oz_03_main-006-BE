@@ -126,10 +126,6 @@ KAKAO_CLIENT_ID = os.getenv('KAKAO_CLIENT_ID')
 KAKAO_CLIENT_SECRET = os.getenv('KAKAO_CLIENT_SECRET')
 KAKAO_REDIRECT_URI = os.getenv('KAKAO_REDIRECT_URI')
 
-# Naver
-NAVER_CLIENT_ID = os.getenv('NAVER_CLIENT_ID')
-NAVER_CLIENT_SECRET = os.getenv('NAVER_CLIENT_SECRET')
-NAVER_REDIRECT_URI = os.getenv('NAVER_REDIRECT_URI')
 
 
 # Password validation
@@ -185,13 +181,6 @@ SOCIALACCOUNT_PROVIDERS = {
         "AUTH_PARAMS": {
             "access_type": "online",
         },
-    },
-    "naver": {
-        "SCOPE": [
-            "username",
-            "email",
-            "profile_image",
-        ]
     },
     "kakao": {
         "SCOPE": [
