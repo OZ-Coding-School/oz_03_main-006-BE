@@ -31,6 +31,12 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["43.203.170.167", "localhost", "127.0.0.1"]
 
+#프론트 테스트용
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173',
+    'http://43.203.170.167:8000',
+]
+
 
 # Application definition
 
@@ -42,6 +48,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "corsheaders",
     "boards.apps.BoardsConfig",
     "locations",
     "profiles",
@@ -59,12 +66,12 @@ INSTALLED_APPS = [
     "rest_framework",
     "social_django",
     "rest_framework.authtoken",
-    "corsheaders",
     "drf_yasg",
     "tinymce",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
