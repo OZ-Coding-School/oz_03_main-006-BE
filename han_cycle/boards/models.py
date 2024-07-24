@@ -16,7 +16,7 @@ class Post(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
     title = models.CharField(max_length=200, null=False)
     tag = models.CharField(max_length=200, null=False)
-    region = models.IntegerField(default=1)
+    region = models.IntegerField(default=0)
     body = HTMLField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
