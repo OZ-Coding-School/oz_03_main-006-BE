@@ -1,6 +1,5 @@
 from rest_framework import serializers
-from .models import Post, Comment, Image
-from users.models import User
+from .models import Post, Comment, Image, Like
 
 #전체 게시글 목록 나타내는 시리얼라이저
 class PostListSerializer(serializers.ModelSerializer):
@@ -31,12 +30,16 @@ class DetailPostSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()
     comments = CommentSerializer(many=True, read_only=True) 
     comment_count = serializers.IntegerField(source='comments.count', read_only=True) # 댓글 갯수
+    likes_count = serializers.SerializerMethodField()
     class Meta:
         model = Post
         fields = '__all__'
     #SerializerMethodField에서 호출될 메소드
     def get_username(self, obj):
         return obj.user_id.username  # User 모델의 nickname 필드를 가져옴
+    
+    def get_likes_count(self, obj):
+        return Like.objects.filter(post=obj).count()
         
 #게시글 작성 시리얼라이저
 class PostSerializer(serializers.ModelSerializer):

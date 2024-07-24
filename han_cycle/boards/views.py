@@ -1,4 +1,5 @@
 from .models import Post, Image, Comment, Like
+from users.models import User
 from boards.serializers import PostListSerializer, PostSerializer, CommentSerializer, ImageSerializer, DetailPostSerializer
 
 from rest_framework.response import Response
@@ -24,6 +25,17 @@ def posts(request):
         return Response(serializer.data)
     
     elif request.method == 'POST':
+        """
+        # 현재 인증된 사용자
+        user = request.user
+    
+        # 게시물 생성을 위한 Serializer 인스턴스 생성
+        serializer_data = request.data.copy()  # 데이터 복사
+        serializer_data['user_id'] = user.id  # Serializer 데이터에 user_id 추가
+        # serializer_data에 request.data를 병합하여 사용
+        serializer_data.update(request_data)
+        serializer = PostSerializer(data=serializer_data)
+        """
         serializer = PostSerializer(data=request.data)
         if serializer.is_valid():
             # 게시물 생성 및 저장
@@ -59,7 +71,7 @@ def post_detail(request, pk):
     if request.method == 'GET':
         post_data = DetailPostSerializer(post).data
         image_data = ImageSerializer(images, many=True).data
-
+        
         # 세션 키 로그인 사용자는 로그인 아이디, 비로그인 사용자는 ip로 저장
         if request.user.is_authenticated:
             session_key = f'user_{request.user.id}_post_{pk}'
@@ -71,6 +83,8 @@ def post_detail(request, pk):
         if not request.session.get(session_key, False):
             Post.objects.filter(pk=pk).update(view_count=Post.view_count + 1)
             request.session[session_key] = True
+        
+        
 
         response_data = {
         'post': post_data,
@@ -83,6 +97,17 @@ def post_detail(request, pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     elif request.method == 'PUT':
+        """
+        # 현재 인증된 사용자
+        user = request.user
+    
+        # 게시물 생성을 위한 Serializer 인스턴스 생성
+        serializer_data = request.data.copy()  # 데이터 복사
+        serializer_data['user_id'] = user.id  # Serializer 데이터에 user_id 추가
+        # serializer_data에 request.data를 병합하여 사용
+        serializer_data.update(request_data)
+        serializer = PostSerializer(data=serializer_data)
+        """
         try:
             serializer = PostSerializer(post, data=request.data)
         
@@ -171,10 +196,12 @@ def upload_image(request):
 
 @api_view(['POST', 'DELETE'])
 @permission_classes([IsAuthenticated]) # 로그인한 사용자만 api에 접근가능
-def click_like(request, post_id):
-    post = get_object_or_404(Post, pk=post_id)
+def click_like(request, pk):
+    post = get_object_or_404(Post, pk=pk)
     user = request.user
-    
+    #postman 테스트용 코드
+    #user_id = request.data.get('user_id', None)
+    #user = User.objects.get(id=user_id)
     try:
         like = Like.objects.get(user=user, post=post)
         # 이미 좋아요가 있는 경우 삭제
