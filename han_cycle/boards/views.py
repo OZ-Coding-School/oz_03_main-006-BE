@@ -1,10 +1,10 @@
-from .models import Post, Image, Comment
+from .models import Post, Image, Comment, Like
 from boards.serializers import PostListSerializer, PostSerializer, CommentSerializer, ImageSerializer, DetailPostSerializer
 
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view,  permission_classes
 from rest_framework import status
-
+from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404, get_list_or_404
 import boto3
 from django.conf import settings
@@ -28,12 +28,10 @@ def posts(request):
         if serializer.is_valid():
             # 게시물 생성 및 저장
             post = serializer.save()
-            #print(f"게시물 생성 완료: {post.title}, ID: {post.id}")  # 로그 추가
             
             # 임시 이미지 ID들을 받아옴
             temp_image_ids_str = request.data.get('temp_image_ids', '')  # 기본값으로 빈 문자열 설정
             temp_image_ids = list(map(int, temp_image_ids_str.split(','))) if temp_image_ids_str else []
-            print(f"임시 이미지 ID들: {temp_image_ids}")  # 로그 추가
             
             # 임시 이미지 ID들로 실제 이미지 객체들을 찾아서 연결
             for image_id in temp_image_ids:
@@ -42,9 +40,7 @@ def posts(request):
                     image.board = post  # 이미지에 게시물을 연결
                     image.save()  # 변경사항 저장
                     post.images.add(image)  # 게시물에 이미지 추가
-                    print(f"이미지 연결 완료: 이미지 ID {image_id} -> 게시물 ID {post.id}")  # 로그 추가
                 except Image.DoesNotExist:
-                    print(f"이미지를 찾을 수 없습니다: 이미지 ID {image_id}")  # 로그 추가
                     pass
             
             # 수정된 PostSerializer를 사용하여 게시물 정보와 이미지 정보를 포함한 응답을 반환
@@ -52,30 +48,24 @@ def posts(request):
             return Response(updated_serializer.data, status=status.HTTP_201_CREATED)
         
         # serializer.is_valid()가 False인 경우에 대한 처리
-        print(f"유효하지 않은 데이터: {serializer.errors}")  # 로그 추가
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    # request.method가 'POST'가 아닌 경우에 대한 처리
-    print("POST 메서드가 아닙니다.")  # 로그 추가
-    return JsonResponse({'error': 'Method not allowed'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
 #세부 게시물 조회(get), 게시물 삭제(delete), 수정(put)
 @api_view(['GET', 'DELETE', 'PUT'])
 def post_detail(request, pk):
     post = get_object_or_404(Post, pk=pk)
     images = Image.objects.filter(board=pk)
    
-
     if request.method == 'GET':
         post_data = DetailPostSerializer(post).data
         image_data = ImageSerializer(images, many=True).data
 
         # 세션 키 로그인 사용자는 로그인 아이디, 비로그인 사용자는 ip로 저장
         if request.user.is_authenticated:
-            session_key = f'user_{request.user.id}_post_viewed_{pk}'
+            session_key = f'user_{request.user.id}_post_{pk}'
         else:
             ip_address = request.META.get('REMOTE_ADDR')
-            session_key = f'anonymous_{ip_address}_post_viewed_{pk}'
+            session_key = f'anonymous_{ip_address}_post_{pk}'
 
         # 조회기록 확인 후 +1
         if not request.session.get(session_key, False):
@@ -97,13 +87,13 @@ def post_detail(request, pk):
             serializer = PostSerializer(post, data=request.data)
         
             if serializer.is_valid():
+                # 기존 데이터 업데이트
                 serializer.save()
             
                 # 임시 이미지 ID들을 받아옴
                 temp_image_ids_str = request.data.get('temp_image_ids', '')  # 기본값으로 빈 문자열 설정
                 temp_image_ids = list(map(int, temp_image_ids_str.split(','))) if temp_image_ids_str else []
-                print(f"임시 이미지 ID들: {temp_image_ids}")  # 로그 추가
-            
+                
                 # 임시 이미지 ID들로 실제 이미지 객체들을 찾아서 연결
                 for image_id in temp_image_ids:
                     try:
@@ -111,15 +101,12 @@ def post_detail(request, pk):
                         image.board = post  # 이미지에 게시물을 연결
                         image.save()  # 변경사항 저장
                         post.images.add(image)  # 게시물에 이미지 추가
-                        print(f"이미지 연결 완료: 이미지 ID {image_id} -> 게시물 ID {post.id}")  # 로그 추가
                     except Image.DoesNotExist:
-                        print(f"이미지를 찾을 수 없습니다: 이미지 ID {image_id}")  # 로그 추가
                         pass
             
                 updated_serializer = PostSerializer(post)
                 return Response(updated_serializer.data, status=status.HTTP_200_OK)
         
-            print(f"유효하지 않은 데이터: {serializer.errors}")  # 로그 추가
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
         except Post.DoesNotExist:
@@ -130,7 +117,6 @@ def post_detail(request, pk):
 @api_view(['GET'])
 def comment_list(request):
     if request.method == 'GET':
-        # comments = Comment.objects.all()
         comments = get_list_or_404(Comment)
         serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data)
@@ -155,10 +141,8 @@ def comment_detail(request, comment_pk) :
     
     elif request.method == "DELETE" :
         comment.delete()
-        data= {
-            'delete' :f'댓글 {comment_pk}번이 삭제 되었습니다.'
-        }
-        return Response(data, status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
     elif request.method == "PUT" :
         serializer = CommentSerializer(instance=comment, data=request.data)
         if serializer.is_valid(raise_exception=True) :
@@ -184,3 +168,19 @@ def upload_image(request):
     
     serializer = ImageSerializer(image_instances, many=True)
     return Response({'temp_image_ids': temp_image_ids, 'images': serializer.data}, status=status.HTTP_201_CREATED)
+
+@api_view(['POST', 'DELETE'])
+@permission_classes([IsAuthenticated]) # 로그인한 사용자만 api에 접근가능
+def click_like(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    user = request.user
+    
+    try:
+        like = Like.objects.get(user=user, post=post)
+        # 이미 좋아요가 있는 경우 삭제
+        like.delete()
+        return Response({"message": "좋아요 취소"}, status=status.HTTP_204_NO_CONTENT)
+    except Like.DoesNotExist:
+        # 좋아요 추가
+        Like.objects.create(user=user, post=post)
+        return Response({"message": "좋아요"}, status=status.HTTP_201_CREATED)
