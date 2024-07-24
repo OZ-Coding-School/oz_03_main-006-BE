@@ -31,7 +31,7 @@ SECRET_KEY = "django-insecure-qsaoip64=)f6+qknn_7x4d@+w$9fkuwd^^z)@m6k$6&gse2y+z
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["43.203.170.167", "localhost", "127.0.0.1"]
 
 
 # Application definition
@@ -265,6 +265,10 @@ CELERY_BEAT_SCHEDULE = {
 
 # override defualt user django
 AUTH_USER_MODEL = "users.User"
+
+# front-end ports to access our app
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True  # if it's false, front-end can't get cookie
 
 # front-end ports to access our app
 CORS_ORIGIN_ALLOW_ALL = True
