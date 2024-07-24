@@ -69,6 +69,19 @@ def post_detail(request, pk):
     if request.method == 'GET':
         post_data = DetailPostSerializer(post).data
         image_data = ImageSerializer(images, many=True).data
+
+        # 세션 키 로그인 사용자는 로그인 아이디, 비로그인 사용자는 ip로 저장
+        if request.user.is_authenticated:
+            session_key = f'user_{request.user.id}_post_viewed_{pk}'
+        else:
+            ip_address = request.META.get('REMOTE_ADDR')
+            session_key = f'anonymous_{ip_address}_post_viewed_{pk}'
+
+        # 조회기록 확인 후 +1
+        if not request.session.get(session_key, False):
+            Post.objects.filter(pk=pk).update(view_count=Post.view_count + 1)
+            request.session[session_key] = True
+
         response_data = {
         'post': post_data,
         'images': image_data,
@@ -76,59 +89,41 @@ def post_detail(request, pk):
         return JsonResponse(response_data)
     
     elif request.method == 'DELETE':
-        user_id = request.data.get('user_id') 
-        try:
-            user_id = int(user_id)  # user_id를 정수로 변환
-        except ValueError:
-            # user_id가 정수로 변환할 수 없는 경우 처리
-            return Response({'error': '유효하지 않은 user_id입니다.'}, status=status.HTTP_400_BAD_REQUEST)
-        if post.user_id.id == user_id:
-            post.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        else :
-            return Response({'error': '권한이 없습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+        post.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     elif request.method == 'PUT':
-        try_id = request.data.get('try_id') 
         try:
-            user_id = int(try_id)  # user_id를 정수로 변환
-        except ValueError:
-            # user_id가 정수로 변환할 수 없는 경우 처리
-            return Response({'error': '유효하지 않은 user_id입니다.'}, status=status.HTTP_400_BAD_REQUEST)
-        if post.user_id.id == user_id:
-            try:
-                serializer = PostSerializer(post, data=request.data)
+            serializer = PostSerializer(post, data=request.data)
         
-                if serializer.is_valid():
-                    serializer.save()
+            if serializer.is_valid():
+                serializer.save()
             
-                    # 임시 이미지 ID들을 받아옴
-                    temp_image_ids_str = request.data.get('temp_image_ids', '')  # 기본값으로 빈 문자열 설정
-                    temp_image_ids = list(map(int, temp_image_ids_str.split(','))) if temp_image_ids_str else []
-                    print(f"임시 이미지 ID들: {temp_image_ids}")  # 로그 추가
+                # 임시 이미지 ID들을 받아옴
+                temp_image_ids_str = request.data.get('temp_image_ids', '')  # 기본값으로 빈 문자열 설정
+                temp_image_ids = list(map(int, temp_image_ids_str.split(','))) if temp_image_ids_str else []
+                print(f"임시 이미지 ID들: {temp_image_ids}")  # 로그 추가
             
-                    # 임시 이미지 ID들로 실제 이미지 객체들을 찾아서 연결
-                    for image_id in temp_image_ids:
-                        try:
-                            image = Image.objects.get(id=image_id)
-                            image.board = post  # 이미지에 게시물을 연결
-                            image.save()  # 변경사항 저장
-                            post.images.add(image)  # 게시물에 이미지 추가
-                            print(f"이미지 연결 완료: 이미지 ID {image_id} -> 게시물 ID {post.id}")  # 로그 추가
-                        except Image.DoesNotExist:
-                            print(f"이미지를 찾을 수 없습니다: 이미지 ID {image_id}")  # 로그 추가
-                            pass
+                # 임시 이미지 ID들로 실제 이미지 객체들을 찾아서 연결
+                for image_id in temp_image_ids:
+                    try:
+                        image = Image.objects.get(id=image_id)
+                        image.board = post  # 이미지에 게시물을 연결
+                        image.save()  # 변경사항 저장
+                        post.images.add(image)  # 게시물에 이미지 추가
+                        print(f"이미지 연결 완료: 이미지 ID {image_id} -> 게시물 ID {post.id}")  # 로그 추가
+                    except Image.DoesNotExist:
+                        print(f"이미지를 찾을 수 없습니다: 이미지 ID {image_id}")  # 로그 추가
+                        pass
             
-                    updated_serializer = PostSerializer(post)
-                    return Response(updated_serializer.data, status=status.HTTP_200_OK)
+                updated_serializer = PostSerializer(post)
+                return Response(updated_serializer.data, status=status.HTTP_200_OK)
         
-                print(f"유효하지 않은 데이터: {serializer.errors}")  # 로그 추가
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            print(f"유효하지 않은 데이터: {serializer.errors}")  # 로그 추가
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-            except Post.DoesNotExist:
-                return Response({'error': '해당 ID의 게시물을 찾을 수 없습니다.'}, status=status.HTTP_404_NOT_FOUND)
-        else :
-            return Response({'error': '권한이 없습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+        except Post.DoesNotExist:
+            return Response({'error': '해당 ID의 게시물을 찾을 수 없습니다.'}, status=status.HTTP_404_NOT_FOUND)
         
 
 #전체 댓글 목록 조회
