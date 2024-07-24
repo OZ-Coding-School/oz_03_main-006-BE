@@ -1,6 +1,6 @@
 #version: "3.11"
 services:
-  app: 
+  app:
     build:
       context: .
       args:
@@ -9,6 +9,7 @@ services:
       - "8000:8000"
     volumes:
       - ./han_cycle:/app
+    command: sh -c "python manage.py runserver 0.0.0.0:8000"
     environment:
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
@@ -18,7 +19,6 @@ services:
     depends_on:
       - db
       - elasticsearch
-    command: "python manage.py runserver 0.0.0.0:8000"
 
   cron:
     image: alpine:latest
@@ -34,7 +34,7 @@ services:
       - DB_PORT=${DB_PORT}
       
   db:
-    image: postgres:15
+    image: postgres:15.7
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
