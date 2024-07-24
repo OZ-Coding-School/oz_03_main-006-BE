@@ -8,6 +8,6 @@ class User(AbstractUser):
     nickname = models.CharField(max_length=100)  # Unique, not null
     created_at = models.DateTimeField(default=timezone.now)  # Timestamp with default value of now
 
-    USERNAME_FIELD = 'email'
+    # USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []  # Corrected this to plural
     

@@ -1,6 +1,4 @@
-from allauth.account.adapter import DefaultAccountAdapter
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
-from allauth.socialaccount.models import SocialAccount
 
 class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
 

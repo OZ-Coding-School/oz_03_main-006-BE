@@ -1,9 +1,19 @@
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
 from .serializers import UserSerializer
 from .models import User
-import jwt, datetime
+import jwt, datetime, requests
+from django.conf import settings
+from django.shortcuts import redirect, render
+import os
+from datetime import timedelta
+import random
+import string
+
+
+
 
 class RegisterView(APIView):
     def post(self, request):
@@ -70,3 +80,185 @@ class LogoutView(APIView):
             'message': 'Successfully logged out'
         }
         return response
+
+
+
+# Social login callback views
+
+def googleredirect(request):
+    state = ''.join(random.choices(string.ascii_uppercase + string.digits, k=16))
+    request.session['oauth_state'] = state
+    return redirect(
+        f'https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id={os.getenv("GOOGLE_CLIENT_ID")}&redirect_uri={os.getenv("GOOGLE_REDIRECT_URI")}&scope=openid%20email%20profile&state={state}'
+    )
+
+class GoogleCallbackView(APIView):
+    def get(self, request):
+        code = request.GET.get('code')
+        state = request.GET.get('state')
+
+        if state != request.session.pop('oauth_state', None):
+            return Response({'error': 'Invalid state'}, status=400)
+
+        token_url = "https://oauth2.googleapis.com/token"
+        payload = {
+            'grant_type': 'authorization_code',
+            'client_id': os.getenv('GOOGLE_CLIENT_ID'),
+            'client_secret': os.getenv('GOOGLE_CLIENT_SECRET'),
+            'redirect_uri': os.getenv('GOOGLE_REDIRECT_URI'),
+            'code': code,
+        }
+        headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+        token_response = requests.post(token_url, data=payload, headers=headers)
+
+        try:
+            token_json = token_response.json()
+        except requests.exceptions.JSONDecodeError:
+            return Response({'error': 'Invalid response from Google API'}, status=500)
+
+        access_token = token_json.get('access_token')
+        if not access_token:
+            return Response({'error': 'Failed to get access token'}, status=400)
+
+        user_info_url = "https://www.googleapis.com/oauth2/v1/userinfo"
+        headers = {'Authorization': f'Bearer {access_token}'}
+        user_info_response = requests.get(user_info_url, headers=headers)
+
+        try:
+            user_info = user_info_response.json()
+        except requests.exceptions.JSONDecodeError:
+            return Response({'error': 'Invalid response from Google API'}, status=500)
+
+        payload = {
+            'user_id': user_info['id'],
+            'exp': datetime.datetime.utcnow() + timedelta(days=1),
+            'iat': datetime.datetime.utcnow(),
+        }
+        jwt_token = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm='HS256')
+
+        response = redirect('/')
+        response.set_cookie('jwt_token', jwt_token, httponly=True, secure=True, samesite='Lax')
+        return response
+
+
+
+def kakaoredirect(request):
+    return redirect(f'https://kauth.kakao.com/oauth/authorize?response_type=code&client_id={os.getenv('KAKAO_CLIENT_ID')}&redirect_uri={os.getenv('KAKAO_REDIRECT_URI')}')
+
+class KakaoLoginView(APIView):
+    def get(self, request):
+        code = request.GET.get('code')
+        if not code:
+            return Response({'error': 'No code provided'}, status=400)
+
+        # Exchange the authorization code for an access token
+        token_url = "https://kauth.kakao.com/oauth/token"
+        payload = {
+            'grant_type': 'authorization_code',
+            'client_id': os.getenv('KAKAO_CLIENT_ID'),
+            'client_secret':os.getenv('KAKAO_CLIENT_SECRET'),
+            'redirect_uri': os.getenv('KAKAO_REDIRECT_URI'),
+            'code': code,
+        }
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+        token_response = requests.post(token_url, data=payload, headers=headers)
+
+        try:
+            token_json = token_response.json()
+        except requests.exceptions.JSONDecodeError:
+            return Response({'error': 'Invalid response from Kakao API'}, status=500)
+
+        access_token = token_json.get('access_token')
+        if not access_token:
+            return Response({'error': 'Failed to get access token'}, status=400)
+
+        # Use the access token to get user information from Kakao
+        user_info_url = "https://kapi.kakao.com/v2/user/me"
+        headers = {
+            'Authorization': f'Bearer {access_token}',
+        }
+        user_info_response = requests.get(user_info_url, headers=headers)
+
+        try:
+            user_info = user_info_response.json()
+        except requests.exceptions.JSONDecodeError:
+            return Response({'error': 'Invalid response from Kakao API'}, status=500)
+
+        # Create a JWT token for your application
+        payload = {
+            'user_id': user_info['id'],
+            'exp': datetime.datetime.utcnow() + timedelta(days=1),
+            'iat': datetime.datetime.utcnow(),
+        }
+        jwt_token = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm='HS256')
+
+        # Set the JWT token in a cookie and redirect to frontend
+        response = redirect('/')  # Replace with your frontend URL
+        response.set_cookie('jwt_token', jwt_token, httponly=True, secure=True, samesite='Lax')
+
+        return response
+    
+def naverredirect(request):
+    state = ''.join(random.choices(string.ascii_uppercase + string.digits, k=16))
+    request.session['oauth_state'] = state
+    return redirect(f'https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id={os.getenv('NAVER_CLIENT_ID')}&state={state}&redirect_uri={os.getenv('NAVER_REDIRECT_URI')}')
+
+class NaverCallbackView(APIView):
+  def get(self, request):
+        code = request.GET.get('code')
+        if not code:
+            return Response({'error': 'No code provided'}, status=400)
+        state = ''.join(random.choices(string.ascii_uppercase + string.digits, k=16))
+        request.session['oauth_state'] = state
+        # Exchange the authorization code for an access token
+        token_url = f"https://nid.naver.com/oauth2.0/token?grant_type=authorization_code&client_id={os.getenv('NAVER_CLIENT_ID')}&client_secret={os.getenv('NAVER_CLIENT_SECRET')}&code=EIc5bFrl4RibFls1&state={state}  "
+        payload = {
+            'grant_type': 'authorization_code',
+            'client_id': os.getenv('NAVER_CLIENT_ID'),
+            'client_secret':os.getenv('NAVER_CLIENT_SECRET'),
+            'redirect_uri': os.getenv('NAVER_REDIRECT_URI'),
+            'code': code,
+        }
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+        token_response = requests.post(token_url, data=payload, headers=headers)
+
+        try:
+            token_json = token_response.json()
+        except requests.exceptions.JSONDecodeError:
+            return Response({'error': 'Invalid response from NAVER API'}, status=500)
+
+        access_token = token_json.get('access_token')
+        if not access_token:
+            return Response({'error': 'Failed to get access token'}, status=400)
+
+        # Use the access token to get user information from Kakao
+        user_info_url = "https://openapi.naver.com/v1/nid/me"
+        headers = {
+            'Authorization': f'Bearer {access_token}',
+        }
+        user_info_response = requests.get(user_info_url, headers=headers)
+
+        try:
+            user_info = user_info_response.json()
+        except requests.exceptions.JSONDecodeError:
+            return Response({'error': 'Invalid response from NAVER API'}, status=500)
+
+        # Create a JWT token for your application
+        payload = {
+            'user_id': user_info['id'],
+            'exp': datetime.datetime.utcnow() + timedelta(days=1),
+            'iat': datetime.datetime.utcnow(),
+        }
+        jwt_token = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm='HS256')
+
+        # Set the JWT token in a cookie and redirect to frontend
+        response = redirect('/')  # Replace with your frontend URL
+        response.set_cookie('jwt_token', jwt_token, httponly=True, secure=True, samesite='Lax')
+
+        return response
+  
+  
