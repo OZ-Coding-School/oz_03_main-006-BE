@@ -1,4 +1,4 @@
-#  Python 3.11이 설치된 Alpine Linux 3.19
+# Python 3.11이 설치된 Alpine Linux 3.19
 # Alpine Linux는 경량화된 리눅스 배포판으로, 컨테이너 환경에 적합
 FROM python:3.11-alpine3.19
 
@@ -19,9 +19,10 @@ COPY ./han_cycle /app
 WORKDIR /app
 EXPOSE 8000
 
+# 개발 모드인지 여부를 결정하는 ARG를 설정합니다.
 ARG DEV=false
 
-RUN apk add --no-cache gcc musl-dev libffi-dev python3-dev  && \
+RUN apk add --no-cache gcc musl-dev libffi-dev python3-dev netcat-openbsd && \
     python -m venv /py && \
     /py/bin/pip install --upgrade pip && \
     /py/bin/pip install -r /tmp/requirements.txt && \
@@ -35,7 +36,10 @@ RUN apk add --no-cache gcc musl-dev libffi-dev python3-dev  && \
         --no-create-home \
         django-user
 
-
+# 환경 변수 PATH를 설정합니다.
 ENV PATH="/py/bin:$PATH"
 
+# django-user로 사용자 변경
 USER django-user
+
+ENTRYPOINT ["sh", "-c", "python manage.py runserver 0.0.0.0:8000"]

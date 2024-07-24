@@ -21,3 +21,4 @@ django-tinymce
 django-cors-headers
 setuptools
 elasticsearch-dsl #검색
+retrying #검색앱이 실행될떄까지 app재실행

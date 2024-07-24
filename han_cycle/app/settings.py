@@ -11,12 +11,16 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 import os
+import time
 from datetime import timedelta
 from pathlib import Path
 
 from celery import Celery
 from celery.schedules import crontab  # crontab import 추가
 from dotenv import load_dotenv
+from elasticsearch import Elasticsearch
+from elasticsearch.exceptions import ConnectionError
+from retrying import retry
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -34,6 +38,20 @@ DEBUG = True
 ALLOWED_HOSTS = ["43.203.170.167", "localhost", "127.0.0.1"]
 
 
+# Retry configuration: 5 retries with exponential backoff (max wait 10 seconds)
+@retry(
+    stop_max_attempt_number=5,
+    wait_exponential_multiplier=1000,
+    wait_exponential_max=10000,
+)
+def wait_for_elasticsearch():
+    es = Elasticsearch(["http://elasticsearch:9200"])
+    if not es.ping():
+        raise ConnectionError("Elasticsearch server is not available")
+
+
+# Call the wait function before Django starts
+wait_for_elasticsearch()
 # Application definition
 
 INSTALLED_APPS = [
