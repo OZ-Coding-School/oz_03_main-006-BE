@@ -15,8 +15,6 @@ import time
 from datetime import timedelta
 from pathlib import Path
 
-from celery import Celery
-from celery.schedules import crontab  # crontab import 추가
 from dotenv import load_dotenv
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError
@@ -24,7 +22,6 @@ from retrying import retry
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -52,8 +49,8 @@ def wait_for_elasticsearch():
 
 # Call the wait function before Django starts
 wait_for_elasticsearch()
-# Application definition
 
+# Application definition
 INSTALLED_APPS = [
     "common",
     "django.contrib.admin",
@@ -66,7 +63,6 @@ INSTALLED_APPS = [
     "locations",
     "profiles",
     "users",
-    "weather",
     # django-authentication apps
     "django.contrib.sites",
     "allauth",
@@ -83,6 +79,8 @@ INSTALLED_APPS = [
     "drf_yasg",
     "tinymce",
     "search",
+    "django_crontab",
+    "weather",
 ]
 
 MIDDLEWARE = [
@@ -105,7 +103,7 @@ SWAGGER_SETTINGS = {
     "USE_SESSION_AUTH": False,
 }
 
-# # 유저모델 커스텀
+# 유저모델 커스텀
 AUTH_USER_MODEL = "users.User"
 
 # django-authentication
@@ -132,7 +130,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "app.wsgi.application"
 
-
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
@@ -148,7 +145,6 @@ DATABASES = {
         "PORT": os.getenv("DB_PORT"),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -168,7 +164,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
@@ -180,12 +175,10 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = "static/"
-
 
 # django-authentication
 AUTHENTICATION_BACKENDS = [
@@ -220,7 +213,6 @@ SOCIALACCOUNT_PROVIDERS = {
     },
 }
 
-
 # backend check the login for test
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
@@ -230,14 +222,10 @@ ACCOUNT_EMAIL_REQUIRED = True
 SOCIALACCOUNT_ADAPTER = "users.adapters.CustomSocialAccountAdapter"
 LOGIN_REDIRECT_URL = "/users/accounts/profile/"
 
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-WSGI_APPLICATION = "app.wsgi.application"
-
 
 # S3 setting
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
@@ -260,33 +248,10 @@ DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 # Media settings
 MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/"
 
-# 날씨 크롤링 요청세팅
-CELERY_BROKER_URL = (
-    "redis://redis:6379/0"  # Redis broker 사용 (Docker Compose의 redis 서비스 이름)
-)
-CELERY_RESULT_BACKEND = "redis://redis:6379/0"
-CELERY_ACCEPT_CONTENT = ["application/json"]
-CELERY_TASK_SERIALIZER = "json"
-CELERY_RESULT_SERIALIZER = "json"
-CELERY_TIMEZONE = "Asia/Seoul"
-
 # 기상청 API요청
 KOREA_WEATHER_API_KEY = "OejFCZQLKQCvjrstrDIun/1WXSaBwtjQggiG9OqbwmB8lQ/lPap09spPZ1uy6mwdezb8xvR9y/z8N+zGTmUU2g=="
-
-# 날씨 6시간 마다 API요청
-CELERY_BEAT_SCHEDULE = {
-    "scrape-weather-data-every-six-hours": {
-        "task": "weather.tasks.scrape_weather_data",
-        "schedule": crontab(minute="*/360"),
-    },
-}
-
-# override defualt user django
+# override default user django
 AUTH_USER_MODEL = "users.User"
-
-# front-end ports to access our app
-CORS_ORIGIN_ALLOW_ALL = True
-CORS_ALLOW_CREDENTIALS = True  # if it's false, front-end can't get cookie
 
 # front-end ports to access our app
 CORS_ORIGIN_ALLOW_ALL = True

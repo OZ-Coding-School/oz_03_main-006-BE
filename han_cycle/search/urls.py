@@ -1,6 +1,6 @@
 from django.urls import path
-from . import views
+from .views import SearchView
 
 urlpatterns = [
-    path("search/", views.search, name="search"),
+    path('search/', SearchView.as_view(), name='article_search'),
 ]

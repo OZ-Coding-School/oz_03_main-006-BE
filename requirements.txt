@@ -12,13 +12,9 @@ boto3 == 1.34.144
 pillow
 djangorestframework-simplejwt
 drf-yasg #swagger
-requests #스크래핑
-beautifulsoup4 #스크래핑
-celery #스크래핑
-flower #스크래핑(날씨)
-django-celery-beat #주기적인 크롤링요청
 django-tinymce
 django-cors-headers
 setuptools
 elasticsearch-dsl #검색
 retrying #검색앱이 실행될떄까지 app재실행
+django-crontab #날씨

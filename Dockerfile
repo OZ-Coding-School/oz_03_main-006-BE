@@ -1,17 +1,13 @@
 # Python 3.11이 설치된 Alpine Linux 3.19
-# Alpine Linux는 경량화된 리눅스 배포판으로, 컨테이너 환경에 적합
 FROM python:3.11-alpine3.19
 
-# LABEL 명령어는 이미지에 메타데이터를 추가합니다. 여기서는 이미지의 유지 관리자를 "seopftware"로 지정하고 있습니다.
+# LABEL 명령어는 이미지에 메타데이터를 추가합니다.
 LABEL maintainer="han_cycle"
 
 # 환경 변수 PYTHONUNBUFFERED를 1로 설정합니다. 
-# 이는 Python이 표준 입출력 버퍼링을 비활성화하게 하여, 로그가 즉시 콘솔에 출력되게 합니다. 
-# 이는 Docker 컨테이너에서 로그를 더 쉽게 볼 수 있게 합니다.
 ENV PYTHONUNBUFFERED=1
 
 # 로컬 파일 시스템의 requirements.txt 파일을 컨테이너의 /tmp/requirements.txt로 복사합니다. 
-# 이 파일은 필요한 Python 패키지들을 명시합니다.
 COPY ./requirements.txt /tmp/requirements.txt
 COPY ./requirements.dev.txt /tmp/requirements.dev.txt
 COPY ./han_cycle /app
@@ -19,27 +15,33 @@ COPY ./han_cycle /app
 WORKDIR /app
 EXPOSE 8000
 
-# 개발 모드인지 여부를 결정하는 ARG를 설정합니다.
 ARG DEV=false
 
+# 패키지 설치 및 파이썬 패키지 설치
 RUN apk add --no-cache gcc musl-dev libffi-dev python3-dev netcat-openbsd && \
     python -m venv /py && \
     /py/bin/pip install --upgrade pip && \
     /py/bin/pip install -r /tmp/requirements.txt && \
-    if [ $DEV = "true" ]; \
-        then /py/bin/pip install -r /tmp/requirements.dev.txt ; \
-    fi && \
+    if [ $DEV = "true" ]; then /py/bin/pip install -r /tmp/requirements.dev.txt ; fi && \
     apk del gcc musl-dev libffi-dev python3-dev && \
     rm -rf /tmp && \
-    adduser \
-        --disabled-password \
-        --no-create-home \
-        django-user
+    adduser --disabled-password --no-create-home django-user && \
+    apk add --no-cache openrc && \
+    rc-status && \
+    touch /run/openrc/softlevel && \
+    apk add --no-cache tzdata && \
+    cp /usr/share/zoneinfo/Asia/Seoul /etc/localtime && \
+    echo "Asia/Seoul" > /etc/timezone && \
+    apk del tzdata
 
-# 환경 변수 PATH를 설정합니다.
+# crontab 파일을 추가하고 권한 설정
+COPY ./crontab /etc/cron.d/crontab
+RUN chmod 0644 /etc/cron.d/crontab && \
+    crontab /etc/cron.d/crontab
+
 ENV PATH="/py/bin:$PATH"
 
-# django-user로 사용자 변경
 USER django-user
 
-ENTRYPOINT ["sh", "-c", "python manage.py runserver 0.0.0.0:8000"]
+# 실행 명령어
+CMD ["sh", "-c", "crond && python manage.py runserver 0.0.0.0:8000"]
