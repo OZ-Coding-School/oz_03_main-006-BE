@@ -41,6 +41,8 @@ RUN chmod 0644 /etc/cron.d/crontab && \
 
 # 스크래핑
 RUN pip install requests beautifulsoup4
+# user 디렉토리 권한
+RUN pip install django-extensions
 
 ENV PATH="/py/bin:$PATH"
 

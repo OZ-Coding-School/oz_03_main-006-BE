@@ -87,6 +87,7 @@ INSTALLED_APPS = [
     "search",
     "django_crontab",
     "weather",
+    "django_extensions",
 ]
 
 MIDDLEWARE = [

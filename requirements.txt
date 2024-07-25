@@ -26,3 +26,4 @@ django-crontab #날씨
 requests #스크래핑
 beautifulsoup4 #스크래핑
 lxml #스크래핑
+django-extensions #user권한확인
