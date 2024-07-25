@@ -7,7 +7,8 @@ class User(AbstractUser):
     provider = models.CharField(max_length=100)  # Not null
     nickname = models.CharField(max_length=100)  # Unique, not null
     created_at = models.DateTimeField(default=timezone.now)  # Timestamp with default value of now
+    profile_image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
 
-    USERNAME_FIELD = 'email'
+    # USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []  # Corrected this to plural
     

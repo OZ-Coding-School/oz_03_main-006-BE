@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 import os
-from datetime import timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -22,14 +21,22 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
-
+load_dotenv(override=True)
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-qsaoip64=)f6+qknn_7x4d@+w$9fkuwd^^z)@m6k$6&gse2y+z"
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+
 ALLOWED_HOSTS = ["43.203.170.167", "localhost", "127.0.0.1"]
+
+#프론트 테스트용
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173',
+    'http://43.203.170.167:8000',
+]
+
 
 
 # Application definition
@@ -42,6 +49,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "corsheaders",
     "boards.apps.BoardsConfig",
     "locations",
     "profiles",
@@ -49,22 +57,16 @@ INSTALLED_APPS = [
     "weather",
     # django-authentication apps
     "django.contrib.sites",
-    "allauth",
-    "allauth.account",
-    "allauth.socialaccount",
-    "allauth.socialaccount.providers.google",
-    "allauth.socialaccount.providers.kakao",
-    "allauth.socialaccount.providers.naver",
     "storages",
     "rest_framework",
     "social_django",
     "rest_framework.authtoken",
-    "corsheaders",
     "drf_yasg",
     "tinymce",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -72,7 +74,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "allauth.account.middleware.AccountMiddleware",
 ]
 
 # 스웨거 세팅, 커스텀유저 모델 허용가능으로 수정
@@ -84,8 +85,6 @@ SWAGGER_SETTINGS = {
     "USE_SESSION_AUTH": False,
 }
 
-# # 유저모델 커스텀
-AUTH_USER_MODEL = "users.User"
 
 # django-authentication
 SITE_ID = 1
@@ -115,7 +114,6 @@ WSGI_APPLICATION = "app.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-load_dotenv(override=True)
 
 DATABASES = {
     "default": {
@@ -127,6 +125,17 @@ DATABASES = {
         "PORT": os.getenv("DB_PORT"),
     }
 }
+
+# Google
+GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
+GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
+GOOGLE_REDIRECT_URI = os.getenv('GOOGLE_REDIRECT_URI')
+
+# Kakao
+KAKAO_CLIENT_ID = os.getenv('KAKAO_CLIENT_ID')
+KAKAO_CLIENT_SECRET = os.getenv('KAKAO_CLIENT_SECRET')
+KAKAO_REDIRECT_URI = os.getenv('KAKAO_REDIRECT_URI')
+
 
 
 # Password validation
@@ -170,7 +179,7 @@ STATIC_URL = "static/"
 AUTHENTICATION_BACKENDS = [
     # Needed to login by username in Django admin, regardless of `allauth`
     "django.contrib.auth.backends.ModelBackend",
-    "allauth.account.auth_backends.AuthenticationBackend",
+    'social_core.backends.kakao.KakaoOAuth2',
 ]
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -182,13 +191,6 @@ SOCIALACCOUNT_PROVIDERS = {
         "AUTH_PARAMS": {
             "access_type": "online",
         },
-    },
-    "naver": {
-        "SCOPE": [
-            "username",
-            "email",
-            "profile_image",
-        ]
     },
     "kakao": {
         "SCOPE": [
