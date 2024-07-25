@@ -183,7 +183,7 @@ class GoogleCallbackView(APIView):
         }
         jwt_token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
-        response = redirect("/")
+        response = redirect("http://localhost:5173/auth/callback")
         response.set_cookie(
             "jwt_token", jwt_token, httponly=True, secure=True, samesite="Lax"
         )
@@ -249,7 +249,7 @@ class KakaoLoginView(APIView):
         }
         jwt_token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
-        response = redirect("/")  # Replace with your frontend URL
+        response = redirect("http://localhost:5173/auth/callback")  # Replace with your frontend URL
         response.set_cookie(
             "jwt_token", jwt_token, httponly=True, secure=True, samesite="Lax"
         )
