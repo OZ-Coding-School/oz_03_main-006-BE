@@ -14,14 +14,17 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.urls import path, include
-from .views import RegisterView, LoginView, UserView, LogoutView
+from django.urls import path
+from .views import RegisterView, LoginView, UserView, LogoutView, GoogleCallbackView, KakaoLoginView, kakaoredirect, googleredirect
 
 urlpatterns = [
-    path('accounts/', include('allauth.urls')),  # Social login
     path('accounts/register', RegisterView.as_view()),
     path('accounts/login', LoginView.as_view()),
     path('accounts/user',UserView.as_view()),  #get token by cookie
-    path('accounts/logout',LogoutView.as_view())
+    path('accounts/logout',LogoutView.as_view()),
+    path('accounts/google/login',googleredirect),
+    path('accounts/google/login/callback/', GoogleCallbackView.as_view()),  # Google callback
+    path('accounts/kakao/login',kakaoredirect),
+    path('accounts/kakao/login/callback/', KakaoLoginView.as_view()), 
 
 ]
