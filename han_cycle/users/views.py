@@ -51,24 +51,16 @@ class LoginView(APIView):
             required=["nickname", "password"],
         ),
         responses={
-            200: "Login successful",
+            200: UserSerializer,
             400: "Bad Request",
             401: "Authentication Failed",
         },
     )
     def post(self, request):
-        """
-        로그인 API
-        - 닉네임과 비밀번호로 사용자 인증 후 JWT 토큰 발급
-        """
         nickname = request.data["nickname"]
         password = request.data["password"]
 
-
-        user = User.objects.filter(
-            nickname=nickname
-        ).first()  # login is possible if and only if the password is correct
-
+        user = User.objects.filter(nickname=nickname).first()
         if user is None:
             raise AuthenticationFailed("User not found!")
 
@@ -80,26 +72,18 @@ class LoginView(APIView):
             "exp": datetime.datetime.utcnow() + datetime.timedelta(days=7),
             "iat": datetime.datetime.utcnow(),
         }
-        # get token
         token = jwt.encode(payload, "secret", algorithm="HS256")
 
-        # get token via cookie
         response = Response()
-
         response.set_cookie(key="jwt", value=token, httponly=True)
 
-        response.data = {"jwt": token}
-
+        serializer = UserSerializer(user)
+        response.data = serializer.data
         return response
-
 
 class UserView(APIView):
     @swagger_auto_schema(responses={200: UserSerializer, 401: "Unauthenticated"})
     def get(self, request):
-        """
-        사용자 정보 조회 API
-        - JWT 토큰을 통해 인증된 사용자 정보 반환
-        """
         token = request.COOKIES.get("jwt")
 
         if not token:
