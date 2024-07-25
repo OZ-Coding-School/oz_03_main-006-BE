@@ -1,4 +1,6 @@
 from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
 
 from .views import (
     GoogleCallbackView,
@@ -9,6 +11,7 @@ from .views import (
     UserView,
     googleredirect,
     kakaoredirect,
+    edit_profile,
 )
 
 urlpatterns = [
@@ -36,4 +39,6 @@ urlpatterns = [
         KakaoLoginView.as_view(),
         name="kakao_callback",
     ),
-]
+    #프로필 수정 API 엔드포인트
+     path('edit-profile/', edit_profile, name='edit_profile'),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
