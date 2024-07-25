@@ -1,27 +1,39 @@
-"""
-URL configuration for han_cycle project.
+from django.urls import path
 
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
-from django.urls import path, include
-from .views import RegisterView, LoginView, UserView, LogoutView
+from .views import (
+    GoogleCallbackView,
+    KakaoLoginView,
+    LoginView,
+    LogoutView,
+    RegisterView,
+    UserView,
+    googleredirect,
+    kakaoredirect,
+)
 
 urlpatterns = [
-    path('accounts/', include('allauth.urls')),  # Social login
-    path('accounts/register', RegisterView.as_view()),
-    path('accounts/login', LoginView.as_view()),
-    path('accounts/user',UserView.as_view()),  #get token by cookie
-    path('accounts/logout',LogoutView.as_view())
-
+    # 사용자 등록 (회원가입) API 엔드포인트
+    path("accounts/register", RegisterView.as_view(), name="register"),
+    # 로그인 API 엔드포인트
+    path("accounts/login", LoginView.as_view(), name="login"),
+    # 사용자 정보 조회 API 엔드포인트 (JWT 토큰 필요)
+    path("accounts/user", UserView.as_view(), name="user"),
+    # 로그아웃 API 엔드포인트
+    path("accounts/logout", LogoutView.as_view(), name="logout"),
+    # 구글 소셜 로그인 리다이렉트 엔드포인트
+    path("accounts/google/login", googleredirect, name="google_login"),
+    # 구글 소셜 로그인 콜백 엔드포인트
+    path(
+        "accounts/google/login/callback/",
+        GoogleCallbackView.as_view(),
+        name="google_callback",
+    ),
+    # 카카오 소셜 로그인 리다이렉트 엔드포인트
+    path("accounts/kakao/login", kakaoredirect, name="kakao_login"),
+    # 카카오 소셜 로그인 콜백 엔드포인트
+    path(
+        "accounts/kakao/login/callback/",
+        KakaoLoginView.as_view(),
+        name="kakao_callback",
+    ),
 ]
