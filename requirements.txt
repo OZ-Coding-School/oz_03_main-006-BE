@@ -18,3 +18,4 @@ django-celery-beat #주기적인 크롤링요청
 PyJWT #API token
 django-cors-headers #for the case, front-end has different port than django
 django-tinymce
+

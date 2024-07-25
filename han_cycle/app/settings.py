@@ -28,7 +28,15 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+
+ALLOWED_HOSTS = ["43.203.170.167", "localhost", "127.0.0.1"]
+
+#프론트 테스트용
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173',
+    'http://43.203.170.167:8000',
+]
+
 
 
 # Application definition
@@ -41,6 +49,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "corsheaders",
     "boards.apps.BoardsConfig",
     "locations",
     "profiles",
@@ -52,11 +61,12 @@ INSTALLED_APPS = [
     "rest_framework",
     "social_django",
     "rest_framework.authtoken",
-    "corsheaders",
     "drf_yasg",
+    "tinymce",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -210,13 +220,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 WSGI_APPLICATION = "app.wsgi.application"
 
 
-
-
 # S3 setting
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
 AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME")
+
 AWS_S3_CUSTOM_DOMAIN = "%s.s3.%s.amazonaws.com" % (
     AWS_STORAGE_BUCKET_NAME,
     AWS_S3_REGION_NAME,
@@ -225,7 +234,7 @@ AWS_S3_CUSTOM_DOMAIN = "%s.s3.%s.amazonaws.com" % (
 AWS_S3_OBJECT_PARAMETERS = {
     "CacheControl": "max-age=86400",
 }
-AWS_LOCATION = "media"
+AWS_LOCATION = "images"
 AWS_DEFAULT_ACL = None
 
 DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
@@ -233,9 +242,9 @@ DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 # Media settings
 MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/"
 
-#override defualt user django
-AUTH_USER_MODEL='users.User'
+# override defualt user django
+AUTH_USER_MODEL = "users.User"
 
-#front-end ports to access our app
-CORS_ORIGIN_ALLOW_ALL=True
-CORS_ALLOW_CREDENTIALS=True #if it's false, front-end can't get cookie
+# front-end ports to access our app
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True  # if it's false, front-end can't get cookie
