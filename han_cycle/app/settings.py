@@ -26,8 +26,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
+load_dotenv(override=True)
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-qsaoip64=)f6+qknn_7x4d@+w$9fkuwd^^z)@m6k$6&gse2y+z"
+SECRET_KEY = os.getenv("SECRET_KEY", "default_secret_key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -39,10 +40,10 @@ ALLOWED_HOSTS = [
     "52.79.207.68",
 ]
 
-#프론트 테스트용
+# 프론트 테스트용
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',
-    'http://43.203.170.167:8000',
+    "http://localhost:5173",
+    "https://hancycle.site",
 ]
 
 
