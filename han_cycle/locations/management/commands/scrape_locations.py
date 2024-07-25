@@ -1,8 +1,13 @@
-# locations/management/commands/scrape_locations.py
+import os
+
 import requests
 from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
 from locations.models import Location, LocationImage
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
 
 
 class Command(BaseCommand):
@@ -11,13 +16,49 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         self.scrape_city_info()
 
-    def scrape_city_info(self):
-        # 네이버 여행 국내 페이지 URL 설정
-        url = "https://travel.naver.com/domestic"
-        response = requests.get(url)  # 페이지 요청
-        soup = BeautifulSoup(response.text, "html.parser")  # BeautifulSoup 객체 생성
+    def click_icon(self, driver):
+        driver.get("https://travel.naver.com/domestic")
+        time.sleep(1)
+        try:
+            element = driver.find_element(By.CSS_SELECTOR, "a.header_search__4UCHI")
+            driver.execute_script("arguments[0].click();", element)
+            time.sleep(2)
+        except Exception as e:
+            print("버튼 못찾아따")
+            print(e)
 
-        # 도시 ID와 이름 매핑
+    def click_button_by_class(self, driver):
+        parent_element = driver.find_element(
+            By.CLASS_NAME, "searchbox_home_tabs__FA2_B"
+        )
+        elements = parent_element.find_elements(
+            By.CLASS_NAME, "searchbox_home_tab__RNL7F"
+        )
+        for element in elements:
+            element.click()
+            time.sleep(1)
+            button = driver.find_element(By.CLASS_NAME, "searchbox_home_button__hVBDW")
+            button.click()
+            time.sleep(1)
+
+    def scrape_city_info(self):
+        options = Options()
+        options.add_argument("--headless")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--start-maximized")
+
+        os.environ["WDM_LOCAL"] = "/tmp/.wdm"
+        driver_path = ChromeDriverManager().install()
+        print(driver_path)
+        driver = webdriver.Chrome(executable_path=driver_path, options=options)
+
+        self.click_icon(driver)
+        self.click_button_by_class(driver)
+
+        soup = BeautifulSoup(driver.page_source, "html.parser")
+
         CITIES = {
             1: "서울",
             2: "경기도",
@@ -38,16 +79,17 @@ class Command(BaseCommand):
             17: "제주도",
         }
 
-        # 각 도시별로 스크래핑 수행
         for city_id, city_name in CITIES.items():
-            # 각 도시 섹션 찾기
-            city_section = soup.find("section", {"data-name": city_name})
-            if not city_section:
-                print(f"City section not found for: {city_name}")
-                continue  # 도시 섹션이 없으면 건너뛰기
+            city_link = soup.find("a", string=city_name)
+            if not city_link:
+                print(f"City link not found for: {city_name}")
+                continue
 
-            # 인기도시 요소들 찾기
-            popular_cities_elements = city_section.select(".cityInfo_anchor__wk6Cu")
+            city_url = "https://travel.naver.com" + city_link["href"]
+            city_response = requests.get(city_url)
+            city_soup = BeautifulSoup(city_response.text, "html.parser")
+
+            popular_cities_elements = city_soup.select(".cityInfo_anchor__wk6Cu")
             if popular_cities_elements:
                 popular_cities = ", ".join(
                     [elem.text.strip() for elem in popular_cities_elements]
@@ -56,16 +98,14 @@ class Command(BaseCommand):
                 print(f"Popular cities elements not found for: {city_name}")
                 popular_cities = ""
 
-            # 도시 설명 요소 찾기
-            description_element = city_section.select_one(".description")
+            description_element = city_soup.select_one(".description")
             if description_element:
                 description = description_element.text.strip()
             else:
                 print(f"Description element not found for: {city_name}")
                 description = ""
 
-            # 하이라이트 요소 찾기
-            highlights_element = city_section.select_one(".highlights")
+            highlights_element = city_soup.select_one(".highlights")
             if highlights_element:
                 highlights = ", ".join(
                     [tag.text.strip() for tag in highlights_element.find_all("span")]
@@ -74,7 +114,6 @@ class Command(BaseCommand):
                 print(f"Highlights element not found for: {city_name}")
                 highlights = ""
 
-            # Location 객체 업데이트 또는 생성
             location, created = Location.objects.update_or_create(
                 city=city_name,
                 defaults={
@@ -84,16 +123,15 @@ class Command(BaseCommand):
                 },
             )
 
-            # 이미지 요소들 찾기
-            image_elements = city_section.select(".image img")
-            for img in image_elements[:5]:  # 가져올 이미지 개수 제한
+            image_elements = city_soup.select(".image img")
+            for img in image_elements[:5]:
                 image_url = img["src"]
-                # LocationImage 객체 업데이트 또는 생성
                 LocationImage.objects.update_or_create(
                     location=location, image_url=image_url
                 )
 
-            # 스크래핑된 데이터 출력
             print(
                 f"Scraped data for {city_name}: popular_cities={popular_cities}, description={description}, highlights={highlights}"
             )
+
+        driver.quit()
