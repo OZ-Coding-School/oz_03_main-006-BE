@@ -6,13 +6,14 @@ from datetime import timedelta
 import jwt
 import requests
 from django.conf import settings
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from django.contrib.auth.decorators import login_required
+from .forms import UserProfileForm
 from .models import User
 from .serializers import UserSerializer
 
@@ -255,3 +256,17 @@ class KakaoLoginView(APIView):
         )
 
         return response
+
+
+#프로필 수정
+@login_required
+def edit_profile(request):
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('profile')  # 프로필 페이지로 리다이렉트
+    else:
+        form = UserProfileForm(instance=request.user)
+    
+    return render(request, 'edit_profile.html', {'form': form})

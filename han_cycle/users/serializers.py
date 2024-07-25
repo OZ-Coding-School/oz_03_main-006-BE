@@ -11,7 +11,7 @@ class UserSerializer(serializers.ModelSerializer):
             "id",
             "nickname",
             "profile_image",
-        ]  # 'user_id' 대신 'id'를 사용합니다.
+        ]  # 'user_id' 대신 'id'를 사용
         extra_kwargs = {"password": {"write_only": True}}
 
     def validate_username(self, value):
