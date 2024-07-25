@@ -1,7 +1,7 @@
 import boto3
 from django.conf import settings
-from django.http import JsonResponse
 from django.db.models import F
+from django.http import JsonResponse
 from django.shortcuts import get_list_or_404, get_object_or_404
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -20,26 +20,23 @@ from .serializers import (
     PostSerializer,
 )
 
+s3 = boto3.client(
+    "s3",
+    aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+    region_name=settings.AWS_S3_REGION_NAME,
+)
 
-s3 = boto3.client('s3',
-                          aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-                          aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-                          region_name=settings.AWS_S3_REGION_NAME)
 
-
-#게시물 작성(post), 전체 게시물 리스트 조회(get)   
-@api_view(['GET', 'POST'])
+# 게시물 작성(post), 전체 게시물 리스트 조회(get)
+@api_view(["GET", "POST"])
 def posts(request):
-    if request.method=='GET':
-        posts=get_list_or_404(Post)
-        serializer=PostListSerializer(posts, many=True)
+    if request.method == "GET":
+        posts = get_list_or_404(Post)
+        serializer = PostListSerializer(posts, many=True)
         return Response(serializer.data)
 
-    @swagger_auto_schema(
-        request_body=PostSerializer,
-        responses={201: PostSerializer, 400: "Bad Request"},
-    )
-    def post(self, request):
+    elif request.method == "POST":
         serializer = PostSerializer(data=request.data)
         if serializer.is_valid():
             post = serializer.save()
@@ -64,40 +61,55 @@ def posts(request):
 
 class PostDetailView(APIView):
     @swagger_auto_schema(
-        operation_description="게시물 상세 조회, 수정 및 삭제",
+        operation_description="게시물 상세 조회",
         responses={
             200: DetailPostSerializer,
-            204: "No Content",
-            400: "Bad Request",
             404: "Not Found",
         },
     )
     def get(self, request, pk):
+        # pk 값을 사용하여 특정 게시물을 가져옵니다.
         post = get_object_or_404(Post, pk=pk)
+
+        # 게시물에 연결된 이미지를 가져옵니다.
         images = Image.objects.filter(board=pk)
+
+        # 게시물 데이터를 직렬화합니다.
         post_data = DetailPostSerializer(post).data
+
+        # 이미지를 직렬화합니다.
         image_data = ImageSerializer(images, many=True).data
+
+        # 세션 키를 사용하여 조회수를 증가시킵니다.
         if request.user.is_authenticated:
             session_key = f"user_{request.user.id}_post_{pk}"
         else:
             ip_address = request.META.get("REMOTE_ADDR")
             session_key = f"anonymous_{ip_address}_post_{pk}"
-        if not request.session.get(session_key, False):
-            Post.objects.filter(pk=pk).update(view_count=F('view_count') + 1)
-            request.session[session_key] = True
-         
-        
 
+        # 세션 키를 확인하여 조회수를 한 번만 증가시킵니다.
+        if not request.session.get(session_key, False):
+            Post.objects.filter(pk=pk).update(view_count=F("view_count") + 1)
+            request.session[session_key] = True
+
+        # 응답 데이터를 구성합니다.
         response_data = {
-        'post': post_data,
-        'images': image_data,
+            "post": post_data,
+            "images": image_data,
         }
+
+        # JSON 형식으로 응답합니다.
         return JsonResponse(response_data)
 
     @swagger_auto_schema(responses={204: "No Content"})
     def delete(self, request, pk):
+        # pk 값을 사용하여 특정 게시물을 가져옵니다.
         post = get_object_or_404(Post, pk=pk)
+
+        # 게시물을 삭제합니다.
         post.delete()
+
+        # 204 No Content 상태로 응답합니다.
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @swagger_auto_schema(
@@ -105,10 +117,18 @@ class PostDetailView(APIView):
         responses={200: PostSerializer, 400: "Bad Request", 404: "Not Found"},
     )
     def put(self, request, pk):
+        # pk 값을 사용하여 특정 게시물을 가져옵니다.
         post = get_object_or_404(Post, pk=pk)
+
+        # 요청 데이터를 사용하여 게시물을 직렬화합니다.
         serializer = PostSerializer(post, data=request.data)
+
+        # 직렬화된 데이터가 유효한 경우
         if serializer.is_valid():
+            # 게시물을 저장합니다.
             serializer.save()
+
+            # 임시 이미지 ID를 가져와 처리합니다.
             temp_image_ids_str = request.data.get("temp_image_ids", "")
             temp_image_ids = (
                 list(map(int, temp_image_ids_str.split(",")))
@@ -117,14 +137,19 @@ class PostDetailView(APIView):
             )
             for image_id in temp_image_ids:
                 try:
+                    # 이미지를 가져와 게시물에 연결합니다.
                     image = Image.objects.get(id=image_id)
                     image.board = post
                     image.save()
                     post.images.add(image)
                 except Image.DoesNotExist:
                     pass
+
+            # 업데이트된 게시물을 직렬화합니다.
             updated_serializer = PostSerializer(post)
             return Response(updated_serializer.data, status=status.HTTP_200_OK)
+
+        # 직렬화된 데이터가 유효하지 않은 경우 오류 응답을 반환합니다.
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
