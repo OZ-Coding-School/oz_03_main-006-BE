@@ -143,7 +143,8 @@ class GoogleCallbackView(APIView):
 
 
 def kakaoredirect(request):
-    return redirect(f'https://kauth.kakao.com/oauth/authorize?response_type=code&client_id={os.getenv('KAKAO_CLIENT_ID')}&redirect_uri={os.getenv('KAKAO_REDIRECT_URI')}')
+    return redirect(f"https://kauth.kakao.com/oauth/authorize?response_type=code&client_id={os.getenv('KAKAO_CLIENT_ID')}&redirect_uri={os.getenv('KAKAO_REDIRECT_URI')}")
+
 
 class KakaoLoginView(APIView):
     def get(self, request):
