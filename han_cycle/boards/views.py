@@ -1,22 +1,23 @@
-import logging
-
 import boto3
-from boards.serializers import (
+from django.conf import settings
+from django.http import JsonResponse
+from django.shortcuts import get_list_or_404, get_object_or_404
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from .models import Comment, Image, Like, Post
+from .serializers import (
     CommentSerializer,
     DetailPostSerializer,
     ImageSerializer,
     PostListSerializer,
     PostSerializer,
 )
-from django.conf import settings
-from django.contrib import messages
-from django.http import JsonResponse
-from django.shortcuts import get_list_or_404, get_object_or_404, redirect, render
-from rest_framework import status
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-
-from .models import Comment, Image, Post
 
 s3 = boto3.client(
     "s3",
@@ -26,136 +27,209 @@ s3 = boto3.client(
 )
 
 
-@api_view(["GET", "POST"])
-def posts(request):
-    if request.method == "GET":
+class PostsView(APIView):
+    @swagger_auto_schema(
+        operation_description="게시물 작성 및 전체 게시물 리스트 조회",
+        responses={200: PostListSerializer(many=True), 201: PostSerializer},
+    )
+    def get(self, request):
         posts = get_list_or_404(Post)
         serializer = PostListSerializer(posts, many=True)
         return Response(serializer.data)
 
-    elif request.method == "POST":
+    @swagger_auto_schema(
+        request_body=PostSerializer,
+        responses={201: PostSerializer, 400: "Bad Request"},
+    )
+    def post(self, request):
         serializer = PostSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if serializer.is_valid():
+            post = serializer.save()
+            temp_image_ids_str = request.data.get("temp_image_ids", "")
+            temp_image_ids = (
+                list(map(int, temp_image_ids_str.split(",")))
+                if temp_image_ids_str
+                else []
+            )
+            for image_id in temp_image_ids:
+                try:
+                    image = Image.objects.get(id=image_id)
+                    image.board = post
+                    image.save()
+                    post.images.add(image)
+                except Image.DoesNotExist:
+                    pass
+            updated_serializer = PostSerializer(post)
+            return Response(updated_serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["GET", "DELETE", "PUT"])
-def post_detail(request, pk):
-    post = get_object_or_404(Post, pk=pk)
-    images = Image.objects.filter(board=pk)
-
-    if request.method == "GET":
-        # serializer = DetailPostSerializer(post)
+class PostDetailView(APIView):
+    @swagger_auto_schema(
+        operation_description="게시물 상세 조회, 수정 및 삭제",
+        responses={
+            200: DetailPostSerializer,
+            204: "No Content",
+            400: "Bad Request",
+            404: "Not Found",
+        },
+    )
+    def get(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        images = Image.objects.filter(board=pk)
         post_data = DetailPostSerializer(post).data
         image_data = ImageSerializer(images, many=True).data
-        # return Response(serializer.data)
-        response_data = {
-            "post": post_data,
-            "images": image_data,
-        }
+        if request.user.is_authenticated:
+            session_key = f"user_{request.user.id}_post_{pk}"
+        else:
+            ip_address = request.META.get("REMOTE_ADDR")
+            session_key = f"anonymous_{ip_address}_post_{pk}"
+        if not request.session.get(session_key, False):
+            Post.objects.filter(pk=pk).update(view_count=Post.view_count + 1)
+            request.session[session_key] = True
+        response_data = {"post": post_data, "images": image_data}
         return JsonResponse(response_data)
 
-    elif request.method == "DELETE":
+    @swagger_auto_schema(responses={204: "No Content"})
+    def delete(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
         post.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    elif request.method == "PUT":
+    @swagger_auto_schema(
+        request_body=PostSerializer,
+        responses={200: PostSerializer, 400: "Bad Request", 404: "Not Found"},
+    )
+    def put(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
         serializer = PostSerializer(post, data=request.data)
-        if serializer.is_valid(raise_exception=True):
+        if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
+            temp_image_ids_str = request.data.get("temp_image_ids", "")
+            temp_image_ids = (
+                list(map(int, temp_image_ids_str.split(",")))
+                if temp_image_ids_str
+                else []
+            )
+            for image_id in temp_image_ids:
+                try:
+                    image = Image.objects.get(id=image_id)
+                    image.board = post
+                    image.save()
+                    post.images.add(image)
+                except Image.DoesNotExist:
+                    pass
+            updated_serializer = PostSerializer(post)
+            return Response(updated_serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["GET"])
-def comment_list(request):
-    if request.method == "GET":
-        # comments = Comment.objects.all()
+class CommentListView(APIView):
+    @swagger_auto_schema(
+        operation_description="전체 댓글 목록 조회",
+        responses={200: CommentSerializer(many=True)},
+    )
+    def get(self, request):
         comments = get_list_or_404(Comment)
         serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data)
 
 
-@api_view(["POST"])
-def comment_create(request, pk):
-    post = get_object_or_404(Post, pk=pk)
-    serializer = CommentSerializer(data=request.data)
-    if serializer.is_valid(raise_exception=True):
-        serializer.save(post=post)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+class CommentCreateView(APIView):
+    @swagger_auto_schema(
+        request_body=CommentSerializer,
+        responses={201: CommentSerializer, 400: "Bad Request"},
+    )
+    def post(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        serializer = CommentSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(post=post)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["GET", "DELETE", "PUT"])
-def comment_detail(request, comment_pk):
-    comment = get_list_or_404(Comment, pk=comment_pk)
-    if request.method == "GET":
+class CommentDetailView(APIView):
+    @swagger_auto_schema(
+        operation_description="댓글 조회, 수정 및 삭제",
+        responses={
+            200: CommentSerializer,
+            204: "No Content",
+            400: "Bad Request",
+            404: "Not Found",
+        },
+    )
+    def get(self, request, comment_pk):
+        comment = get_object_or_404(Comment, pk=comment_pk)
         serializer = CommentSerializer(comment)
         return Response(serializer.data)
-    elif request.method == "DELETE":
+
+    @swagger_auto_schema(responses={204: "No Content"})
+    def delete(self, request, comment_pk):
+        comment = get_object_or_404(Comment, pk=comment_pk)
         comment.delete()
-        data = {"delete": f"댓글 {comment_pk}번이 삭제 되었습니다."}
-        return Response(data, status=status.HTTP_204_NO_CONTENT)
-    elif request.method == "PUT":
-        serializer = CommentSerializer(instance=comment, data=request.data)
-        if serializer.is_valid(raise_exception=True):
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @swagger_auto_schema(
+        request_body=CommentSerializer,
+        responses={200: CommentSerializer, 400: "Bad Request", 404: "Not Found"},
+    )
+    def put(self, request, comment_pk):
+        comment = get_object_or_404(Comment, pk=comment_pk)
+        serializer = CommentSerializer(comment, data=request.data)
+        if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-logger = logging.getLogger(__name__)
-
-
-@api_view(["POST"])
-def upload_images(request, post_id):
-
-    try:
-        post = Post.objects.get(id=post_id)
-    except Post.DoesNotExist:
-        return Response({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
-
-    images = request.FILES.getlist("images")
-    if not images:
+class UploadImageView(APIView):
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "images": openapi.Schema(
+                    type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_FILE)
+                )
+            },
+        ),
+        responses={201: ImageSerializer(many=True), 400: "Bad Request"},
+    )
+    def post(self, request):
+        images = request.FILES.getlist("images")
+        if not images:
+            return Response(
+                {"error": "No images provided"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        image_instances = []
+        temp_image_ids = []
+        for image in images:
+            image_instance = Image(image=image)
+            image_instance.save()
+            image_instances.append(image_instance)
+            temp_image_ids.append(image_instance.id)
+        serializer = ImageSerializer(image_instances, many=True)
         return Response(
-            {"error": "No images provided"}, status=status.HTTP_400_BAD_REQUEST
+            {"temp_image_ids": temp_image_ids, "images": serializer.data},
+            status=status.HTTP_201_CREATED,
         )
 
-    image_instances = []
-    for image in images:
-        image_instance = Image(board=post, image=image)
-        image_instances.append(image_instance)
 
-    Image.objects.bulk_create(image_instances)
+class LikeView(APIView):
+    permission_classes = [IsAuthenticated]
 
-    serializer = ImageSerializer(image_instances, many=True)
-    return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
-def board(request):
-    # 모든 Post를 가져와 postlist에 저장합니다
-    postlist = Post.objects.all()
-    return render(request, "boards/board.html", {"postlist": postlist})
-
-
-# 세부 게시글 들어가기
-def post(request, pk):
-    # 게시글(Post) 중 pk(primary_key)를 이용해 하나의 게시글(post)를 검색
-    post = Post.objects.get(pk=pk)
-    # posting.html 페이지를 열 때, 찾아낸 게시글(post)을 post라는 이름으로 가져옴
-    return render(request, "boards/post.html", {"post": post})
-
-
-def create_post(request):
-    if request.method == "POST":
-        form = PostForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "게시물이 성공적으로 등록되었습니다.")
-            return redirect(
-                "/posts"
-            )  # 게시물 리스트 페이지로 리디렉션 (URL 이름은 프로젝트에 맞게 변경)
-        else:
-            messages.error(request, "폼에 오류가 있습니다. 다시 시도해 주세요.")
-    else:
-        form = PostForm()
-
-    return render(request, "boards/new_post.html", {"form": form})
+    @swagger_auto_schema(
+        responses={201: "좋아요", 204: "좋아요 취소", 404: "Not Found"}
+    )
+    def post(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        user = request.user
+        try:
+            like = Like.objects.get(user=user, post=post)
+            like.delete()
+            return Response(
+                {"message": "좋아요 취소"}, status=status.HTTP_204_NO_CONTENT
+            )
+        except Like.DoesNotExist:
+            Like.objects.create(user=user, post=post)
+            return Response({"message": "좋아요"}, status=status.HTTP_201_CREATED)

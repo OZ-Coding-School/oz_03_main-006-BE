@@ -22,7 +22,6 @@ djangorestframework-simplejwt = "^5.3.1"
 drf-yasg = "^1.21.7"
 django-cors-headers = "^4.4.0"
 
-
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
