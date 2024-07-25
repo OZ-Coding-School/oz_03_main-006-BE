@@ -39,6 +39,9 @@ COPY ./crontab /etc/cron.d/crontab
 RUN chmod 0644 /etc/cron.d/crontab && \
     crontab /etc/cron.d/crontab
 
+# 스크래핑
+RUN pip install requests beautifulsoup4
+
 ENV PATH="/py/bin:$PATH"
 
 USER django-user
