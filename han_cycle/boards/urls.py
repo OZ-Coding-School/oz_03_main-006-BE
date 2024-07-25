@@ -6,12 +6,12 @@ from .views import (
     CommentListView,
     LikeView,
     PostDetailView,
-    PostsView,
     UploadImageView,
+    posts,
 )
 
 urlpatterns = [
-    path("posts/", PostsView.as_view(), name="posts"),
+    path("posts/", posts, name="posts"),
     path("posts/<int:pk>/", PostDetailView.as_view(), name="post_detail"),
     path("comments/", CommentListView.as_view(), name="comment_list"),
     path(

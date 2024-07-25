@@ -23,20 +23,24 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 load_dotenv(override=True)
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = os.getenv("SECRET_KEY", "default_secret_key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 
-ALLOWED_HOSTS = ["43.203.170.167", "localhost", "127.0.0.1"]
-
-#프론트 테스트용
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',
-    'http://43.203.170.167:8000',
+ALLOWED_HOSTS = [
+    "43.203.170.167",
+    "localhost",
+    "127.0.0.1",
+    "52.79.207.68",
 ]
 
+# 프론트 테스트용
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "https://hancycle.site",
+]
 
 
 # Application definition
@@ -127,15 +131,14 @@ DATABASES = {
 }
 
 # Google
-GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
-GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
-GOOGLE_REDIRECT_URI = os.getenv('GOOGLE_REDIRECT_URI')
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
 
 # Kakao
-KAKAO_CLIENT_ID = os.getenv('KAKAO_CLIENT_ID')
-KAKAO_CLIENT_SECRET = os.getenv('KAKAO_CLIENT_SECRET')
-KAKAO_REDIRECT_URI = os.getenv('KAKAO_REDIRECT_URI')
-
+KAKAO_CLIENT_ID = os.getenv("KAKAO_CLIENT_ID")
+KAKAO_CLIENT_SECRET = os.getenv("KAKAO_CLIENT_SECRET")
+KAKAO_REDIRECT_URI = os.getenv("KAKAO_REDIRECT_URI")
 
 
 # Password validation
@@ -179,7 +182,7 @@ STATIC_URL = "static/"
 AUTHENTICATION_BACKENDS = [
     # Needed to login by username in Django admin, regardless of `allauth`
     "django.contrib.auth.backends.ModelBackend",
-    'social_core.backends.kakao.KakaoOAuth2',
+    "social_core.backends.kakao.KakaoOAuth2",
 ]
 
 SOCIALACCOUNT_PROVIDERS = {
