@@ -14,17 +14,20 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
+from django.conf.urls.static import static
 from django.urls import path
-from .views import RegisterView, LoginView, UserView, LogoutView, GoogleCallbackView, KakaoLoginView, kakaoredirect, googleredirect
+from .views import RegisterView, LoginView, UserView, LogoutView, GoogleCallbackView, KakaoLoginView, kakaoredirect, googleredirect, edit_profile
 
 urlpatterns = [
     path('accounts/register', RegisterView.as_view()),
     path('accounts/login', LoginView.as_view()),
-    path('accounts/user',UserView.as_view()),  #get token by cookie
-    path('accounts/logout',LogoutView.as_view()),
-    path('accounts/google/login',googleredirect),
+    path('accounts/user', UserView.as_view()),  # get token by cookie
+    path('accounts/logout', LogoutView.as_view()),
+    path('accounts/google/login', googleredirect),
     path('accounts/google/login/callback/', GoogleCallbackView.as_view()),  # Google callback
-    path('accounts/kakao/login',kakaoredirect),
-    path('accounts/kakao/login/callback/', KakaoLoginView.as_view()), 
+    path('accounts/kakao/login', kakaoredirect),
+    path('accounts/kakao/login/callback/', KakaoLoginView.as_view()),
+    path('edit-profile/', edit_profile, name='edit_profile'),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-]

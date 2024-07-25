@@ -242,6 +242,9 @@ DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 # Media settings
 MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/"
 
+#프로필 수정 
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 # override defualt user django
 AUTH_USER_MODEL = "users.User"
 

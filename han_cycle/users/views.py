@@ -15,6 +15,8 @@ from datetime import timedelta
 import random
 import string
 from .serializers import UserSerializer
+from django.contrib.auth.decorators import login_required
+from .forms import UserProfileForm
 
 
 
@@ -242,8 +244,21 @@ class KakaoLoginView(APIView):
         jwt_token = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm='HS256')
 
         # Set the JWT token in a cookie and redirect to frontend
-        response = redirect('/')  # Replace with your frontend URL
+        response = redirect('http://localhost:5173/auth/callback')  # Replace with your frontend URL
         response.set_cookie('jwt_token', jwt_token, httponly=True, secure=True, samesite='Lax')
 
         return response
     
+
+#프로필 수정
+@login_required
+def edit_profile(request):
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('profile')  # 프로필 페이지로 리다이렉트
+    else:
+        form = UserProfileForm(instance=request.user)
+    
+    return render(request, 'edit_profile.html', {'form': form})
