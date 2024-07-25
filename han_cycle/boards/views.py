@@ -10,6 +10,7 @@ from django.shortcuts import get_object_or_404, get_list_or_404
 import boto3
 from django.conf import settings
 from django.http import JsonResponse
+from django.db.models import F
 s3 = boto3.client('s3',
                           aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
                           aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
@@ -81,9 +82,9 @@ def post_detail(request, pk):
 
         # 조회기록 확인 후 +1
         if not request.session.get(session_key, False):
-            Post.objects.filter(pk=pk).update(view_count=Post.view_count + 1)
+            Post.objects.filter(pk=pk).update(view_count=F('view_count') + 1)
             request.session[session_key] = True
-        
+         
         
 
         response_data = {
