@@ -20,13 +20,6 @@ from .serializers import (
     PostSerializer,
 )
 
-s3 = boto3.client(
-    "s3",
-    aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-    aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-    region_name=settings.AWS_S3_REGION_NAME,
-)
-
 
 # 게시물 작성(post), 전체 게시물 리스트 조회(get)
 @api_view(["GET", "POST"])

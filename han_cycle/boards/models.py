@@ -21,7 +21,7 @@ class Post(models.Model):
     view_count = models.PositiveIntegerField(default=0)
     travel_start_date = models.DateField(null=True, blank=True)
     travel_end_date = models.DateField(null=True, blank=True)
-    thumbnail=models.ImageField(upload_to=image_upload_path)
+    thumbnail=models.ImageField(upload_to=image_upload_path,null=True, blank=True)
 
     def __str__(self):
         return self.title
