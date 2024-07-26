@@ -8,6 +8,7 @@ import requests
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
+from django.utils.decorators import method_decorator
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.exceptions import AuthenticationFailed
@@ -261,15 +262,14 @@ class KakaoLoginView(APIView):
         return response
 
 
-# 프로필 수정
-@login_required
-def edit_profile(request):
-    if request.method == "POST":
+class EditProfileView(APIView):
+    @swagger_auto_schema(
+        request_body=UserSerializer, responses={200: UserSerializer, 400: "Bad Request"}
+    )
+    @method_decorator(login_required)
+    def post(self, request):
+        """
+        프로필 수정 API
+        - 로그인된 사용자가 자신의 프로필 정보를 수정
+        """
         form = UserProfileForm(request.POST, request.FILES, instance=request.user)
-        if form.is_valid():
-            form.save()
-            return redirect("profile")  # 프로필 페이지로 리다이렉트
-    else:
-        form = UserProfileForm(instance=request.user)
-
-    return render(request, "edit_profile.html", {"form": form})
