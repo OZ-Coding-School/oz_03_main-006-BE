@@ -54,8 +54,10 @@ services:
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false  # 보안을 비활성화
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m #힙영역 512쓰기
     ports:
       - "9200:9200"
+      - "9300:9300"
     volumes:
       - es_data:/usr/share/elasticsearch/data
 
