@@ -19,3 +19,6 @@ PyJWT #API token
 django-cors-headers #for the case, front-end has different port than django
 django-tinymce
 setuptools
+elasticsearch-dsl #검색
+retrying #검색앱이 실행될떄까지 app재실행
+django-crontab #날씨

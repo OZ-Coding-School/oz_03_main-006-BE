@@ -48,7 +48,7 @@
 - **기타**: djangorestframework-simplejwt, django-cors-headers, django-environ, django-storages, boto3, python-decouple
 
 
-## 테스트 고려사항(다는 못함....)
+## 테스트 고려사항(기능 구현 완료하고 정상작동하는지 한번씩 해보기!)
 
 - 1. 모델 (Models) 테스트:
 

@@ -18,5 +18,5 @@
             uses : actions/checkout@v2
           - name : Run TestCode
             run : docker-compose run --rm app sh -c 'python manage.py test'
-          # - name : Run Flake8 for Lint Check #pep8 스타일 가이드를 잘 준수하고 있는지 체크
-          #   run : docker-compose run --rm app sh -c 'flake8'
+#           # - name : Run Flake8 for Lint Check #pep8 스타일 가이드를 잘 준수하고 있는지 체크
+#           #   run : docker-compose run --rm app sh -c 'flake8'
