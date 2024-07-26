@@ -13,7 +13,6 @@ class PostListSerializer(serializers.ModelSerializer):
 # 댓글 시리얼라이저
 class CommentSerializer(serializers.ModelSerializer):
     nickname = serializers.SerializerMethodField()
-
     class Meta:
         model = Comment
         fields = "__all__"
