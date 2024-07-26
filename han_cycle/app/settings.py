@@ -11,16 +11,21 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 import os
+import time
+from datetime import timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
+from elasticsearch import Elasticsearch
+from elasticsearch.exceptions import ConnectionError
+from retrying import retry
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
+
 load_dotenv(override=True)
 # SECURITY WARNING: keep the secret key used in production secret!
 
@@ -29,7 +34,6 @@ SECRET_KEY = os.getenv("SECRET_KEY", "default_secret_key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
 
 ALLOWED_HOSTS = [
     "43.203.170.167",
@@ -45,8 +49,22 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 
-# Application definition
+# Retry configuration: 5 retries with exponential backoff (max wait 10 seconds)
+@retry(
+    stop_max_attempt_number=5,
+    wait_exponential_multiplier=1000,
+    wait_exponential_max=10000,
+)
+def wait_for_elasticsearch():
+    es = Elasticsearch(["http://elasticsearch:9200"])
+    if not es.ping():
+        raise ConnectionError("Elasticsearch server is not available")
 
+
+# Call the wait function before Django starts
+wait_for_elasticsearch()
+
+# Application definition
 INSTALLED_APPS = [
     "common",
     "django.contrib.admin",
@@ -58,9 +76,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "boards.apps.BoardsConfig",
     "locations",
-    "profiles",
     "users",
-    "weather",
     # django-authentication apps
     "django.contrib.sites",
     "storages",
@@ -69,6 +85,9 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "drf_yasg",
     "tinymce",
+    "search",
+    "django_crontab",
+    "weather",
 ]
 
 MIDDLEWARE = [
@@ -113,8 +132,6 @@ TEMPLATES = [
         },
     },
 ]
-
-WSGI_APPLICATION = "app.wsgi.application"
 
 
 # Database
@@ -161,7 +178,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
@@ -173,12 +189,10 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = "static/"
-
 
 # django-authentication
 AUTHENTICATION_BACKENDS = [
@@ -206,7 +220,6 @@ SOCIALACCOUNT_PROVIDERS = {
     },
 }
 
-
 # backend check the login for test
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
@@ -215,7 +228,6 @@ ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_REQUIRED = True
 SOCIALACCOUNT_ADAPTER = "users.adapters.CustomSocialAccountAdapter"
 LOGIN_REDIRECT_URL = "/users/accounts/profile/"
-
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -246,9 +258,15 @@ DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 
 # Media settings
 MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/"
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+# 엘라스틱서치 의존성
+ELASTICSEARCH_DSL = {
+    "default": {"hosts": "http://elasticsearch:9200"},
+}
 
-# override defualt user django
+# 기상청 API요청
+KOREA_WEATHER_API_KEY = "OejFCZQLKQCvjrstrDIun/1WXSaBwtjQggiG9OqbwmB8lQ/lPap09spPZ1uy6mwdezb8xvR9y/z8N+zGTmUU2g=="
+# override default user django
 AUTH_USER_MODEL = "users.User"
 
 # front-end ports to access our app
