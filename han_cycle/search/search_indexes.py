@@ -1,22 +1,39 @@
+from django.apps import apps
 from elasticsearch_dsl import Date, Document, Text
-from elasticsearch_dsl.connections import connections
-
-connections.create_connection(hosts=["http://elasticsearch:9200"])
 
 
-class ArticleIndex(Document):
+class PostIndex(Document):
     title = Text()
     content = Text()
-    published_date = Date()
 
     class Index:
-        name = "articles"
+        name = "posts"
 
-    def save(self, **kwargs):
-        if not self.meta.id:
-            self.meta.id = self.id  # self.id가 정의되어 있는지 확인 필요
-        return super().save(**kwargs)
+    @classmethod
+    def get_model(cls):
+        return apps.get_model("boards", "Post")
 
 
-# 인덱스 생성 코드 추가
-ArticleIndex.init()
+class UserIndex(Document):
+    nickname = Text()
+    email = Text()
+
+    class Index:
+        name = "users"
+
+    @classmethod
+    def get_model(cls):
+        return apps.get_model("users", "User")
+
+
+class LocationIndex(Document):
+    city = Text()
+    description = Text()
+    highlights = Text()
+
+    class Index:
+        name = "locations"
+
+    @classmethod
+    def get_model(cls):
+        return apps.get_model("locations", "Location")

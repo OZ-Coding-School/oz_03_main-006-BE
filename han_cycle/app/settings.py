@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
-
+load_dotenv(override=True)
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-qsaoip64=)f6+qknn_7x4d@+w$9fkuwd^^z)@m6k$6&gse2y+z"
 
@@ -39,10 +39,10 @@ ALLOWED_HOSTS = [
     "52.79.207.68",
 ]
 
-#프론트 테스트용
+# 프론트 테스트용
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',
-    'http://43.203.170.167:8000',
+    "http://localhost:5173",
+    "https://hancycle.site",
 ]
 
 
@@ -73,7 +73,6 @@ INSTALLED_APPS = [
     "corsheaders",
     "boards.apps.BoardsConfig",
     "locations",
-    "profiles",
     "users",
     # django-authentication apps
     "django.contrib.sites",
@@ -115,8 +114,6 @@ SWAGGER_SETTINGS = {
     "USE_SESSION_AUTH": False,
 }
 
-# 유저모델 커스텀
-AUTH_USER_MODEL = "users.User"
 
 # django-authentication
 SITE_ID = 1
@@ -140,12 +137,10 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "app.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-load_dotenv(override=True)
 
 DATABASES = {
     "default": {
@@ -239,6 +234,9 @@ LOGIN_REDIRECT_URL = "/users/accounts/profile/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+WSGI_APPLICATION = "app.wsgi.application"
+
+
 # S3 setting
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
@@ -260,6 +258,11 @@ DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 
 # Media settings
 MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+# 엘라스틱서치 의존성
+ELASTICSEARCH_DSL = {
+    "default": {"hosts": "http://elasticsearch:9200"},
+}
 
 # 기상청 API요청
 KOREA_WEATHER_API_KEY = "OejFCZQLKQCvjrstrDIun/1WXSaBwtjQggiG9OqbwmB8lQ/lPap09spPZ1uy6mwdezb8xvR9y/z8N+zGTmUU2g=="

@@ -37,8 +37,8 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("users/", include("users.urls")),
     path("posts/", include("boards.urls")),
-    path('api/weather/', include('weather.urls')),
-    path('api/', include('search.urls')),
+    path("api/weather/", include("weather.urls")),
+    path("api/search/", include("search.urls")),  # search 앱 추가
     path(
         "swagger/",
         schema_view.with_ui("swagger", cache_timeout=0),
