@@ -1,9 +1,10 @@
-import requests
-from django.core.management.base import BaseCommand
-from django.conf import settings
-from weather.models import Weather
-from locations.models import Location
 from datetime import datetime, timedelta
+
+import requests
+from django.conf import settings
+from django.core.management.base import BaseCommand
+from locations.models import Location
+from weather.models import Weather
 
 
 class Command(BaseCommand):
@@ -41,28 +42,59 @@ class Command(BaseCommand):
 
             url = (
                 f"http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst"
-                f"?serviceKey={service_key}&numOfRows=10&pageNo=1&dataType=JSON"
+                f"?serviceKey={service_key}&numOfRows=100&pageNo=1&dataType=JSON"
                 f"&base_date={base_date}&base_time={base_time}&nx={nx}&ny={ny}"
             )
 
             response = requests.get(url)
-            data = response.json()
+            if response.status_code != 200:
+                self.stdout.write(
+                    self.style.ERROR(f"Failed to fetch data: {response.status_code}")
+                )
+                self.stdout.write(
+                    self.style.ERROR(f"Response content: {response.content}")
+                )
+                continue
+
+            try:
+                data = response.json()
+            except ValueError as e:
+                self.stdout.write(self.style.ERROR(f"JSON decode error: {e}"))
+                self.stdout.write(
+                    self.style.ERROR(f"Response content: {response.content}")
+                )
+                continue
 
             if data["response"]["header"]["resultCode"] == "00":
                 items = data["response"]["body"]["items"]["item"]
+
                 for item in items:
                     fcst_date = item["fcstDate"]
                     fcst_time = item["fcstTime"]
-                    W_category = item["category"]
+                    category = item["category"]
                     fcst_value = item["fcstValue"]
 
-                    Weather.objects.update_or_create(
+                    # 기존 데이터베이스의 데이터를 업데이트하거나 새로운 데이터를 생성합니다.
+                    weather, created = Weather.objects.update_or_create(
                         location=location,
                         base_date=base_date,
                         fcst_date=fcst_date,
                         base_time=fcst_time,
-                        W_category=W_category,
-                        defaults={"fcst_value": fcst_value},
+                        defaults={
+                            category: fcst_value,
+                        },
                     )
+
+                    # fcst_value는 항상 최신 값으로 유지합니다.
+                    if not created:
+                        setattr(weather, category, fcst_value)
+                        weather.fcst_value = fcst_value
+                        weather.save()
+
+                    # Debug 용 출력
+                    print(
+                        f"Location: {location.city}, Date: {fcst_date}, Time: {fcst_time}, Category: {category}, Value: {fcst_value}"
+                    )
+
             else:
                 self.stdout.write(self.style.ERROR("Failed to fetch data from API"))

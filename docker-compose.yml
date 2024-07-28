@@ -20,9 +20,12 @@ services:
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME}
       - AWS_S3_REGION_NAME=${AWS_S3_REGION_NAME}
+      - KMA_API_KEY=OejFCZQLKQCvjrstrDIun/1WXSaBwtjQggiG9OqbwmB8lQ/lPap09spPZ1uy6mwdezb8xvR9y/z8N+zGTmUU2g==
     depends_on:
       - db
       - elasticsearch
+    networks:
+      - my_network
 
   cron:
     image: alpine:latest
@@ -36,6 +39,8 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT}
+    networks:
+      - my_network
       
   db:
     image: postgres:15.7
@@ -47,7 +52,8 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
+    networks:
+      - my_network
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.17.1
@@ -60,6 +66,8 @@ services:
       - "9300:9300"
     volumes:
       - es_data:/usr/share/elasticsearch/data
+    networks:
+      - my_network
 
   kibana:
     image: docker.elastic.co/kibana/kibana:7.17.1
@@ -67,8 +75,13 @@ services:
       - "5601:5601"
     depends_on:
       - elasticsearch
+    networks:
+      - my_network
 
 volumes:
   postgres_data:
   es_data:
- 
+
+networks:
+  my_network:
+    driver: bridge
