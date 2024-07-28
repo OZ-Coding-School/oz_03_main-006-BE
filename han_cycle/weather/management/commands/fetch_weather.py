@@ -32,8 +32,8 @@ class Command(BaseCommand):
             17: {"nx": 52, "ny": 38},  # 제주도
         }
 
-        base_date = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")
-        base_time = "2300"  # 전날 11시 발표 시각
+        base_date = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")  # 전날 날짜
+        base_time = "2300"  # 23:00 발표 시각
 
         service_key = settings.KMA_API_KEY  # 기상청 공공 API 키를 settings.py에 추가
 
@@ -96,25 +96,17 @@ class Command(BaseCommand):
                     category = item["category"]
                     fcst_value = item["fcstValue"]
 
-                    # 당일 데이터만 필터링
-                    current_time = datetime.now()
-                    forecast_time = datetime.strptime(
-                        fcst_date + fcst_time, "%Y%m%d%H%M"
-                    )
-                    if forecast_time.date() != current_time.date():
-                        continue
-
+                    # 모든 데이터를 필터링 없이 저장
                     if (fcst_date, fcst_time) not in weather_data:
                         weather_data[(fcst_date, fcst_time)] = {
                             "POP": None,
-                            "TMX": None,
-                            "TMN": None,
+                            "TMP": None,
                             "SKY": None,
                         }
 
                     if category in weather_data[(fcst_date, fcst_time)]:
                         weather_data[(fcst_date, fcst_time)][category] = (
-                            float(fcst_value) if "." in fcst_value else int(fcst_value)
+                            float(fcst_value) if category == "TMP" else int(fcst_value)
                         )
 
                 for (fcst_date, fcst_time), data in weather_data.items():
@@ -128,8 +120,7 @@ class Command(BaseCommand):
                         base_time=fcst_time,
                         defaults={
                             "POP": data["POP"],
-                            "TMX": data["TMX"],
-                            "TMN": data["TMN"],
+                            "TMP": data["TMP"],
                             "SKY": data["SKY"],
                         },
                     )
