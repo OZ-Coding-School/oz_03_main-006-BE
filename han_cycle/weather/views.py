@@ -10,6 +10,37 @@ from .models import Weather
 from .serializers import WeatherSerializer
 
 
+class LatestWeatherView(APIView):
+    @swagger_auto_schema(
+        operation_description="Get latest weather forecast for a specific location",
+        responses={200: WeatherSerializer, 404: "Location not found"},
+        manual_parameters=[
+            openapi.Parameter(
+                "location_id",
+                openapi.IN_PATH,
+                description="ID of the location",
+                type=openapi.TYPE_INTEGER,
+            )
+        ],
+    )
+    def get(self, request, location_id):
+        location = get_object_or_404(Location, location_id=location_id)
+        latest_weather = (
+            Weather.objects.filter(location=location)
+            .order_by("-fcst_date", "-base_time")
+            .first()
+        )
+
+        if not latest_weather:
+            return Response(
+                {"error": "Weather data not found for this location"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        serializer = WeatherSerializer(latest_weather)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class WeatherForecastView(APIView):
     @swagger_auto_schema(
         operation_description="Get weather forecast for a specific location",
