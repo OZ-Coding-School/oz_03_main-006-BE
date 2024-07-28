@@ -1,2 +1,2 @@
 SHELL=/bin/sh
-*/360 * * * * cd /app && python manage.py fetch_weather >> /var/log/cron.log 2>&1
+20 2 * * * cd /app && python manage.py fetch_weather >> /var/log/cron.log 2>&1

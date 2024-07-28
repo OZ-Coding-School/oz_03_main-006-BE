@@ -35,6 +35,9 @@ COPY ./crontab /etc/cron.d/crontab
 RUN chmod 0644 /etc/cron.d/crontab && \
     crontab /etc/cron.d/crontab
 
+#날씨API패키지
+RUN pip install xmltodict
+
 ENV PATH="/py/bin:$PATH"
 
 USER django-user

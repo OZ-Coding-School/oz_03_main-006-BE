@@ -1,3 +1,4 @@
+import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 
 import requests
@@ -31,8 +32,8 @@ class Command(BaseCommand):
             17: {"nx": 52, "ny": 38},  # 제주도
         }
 
-        base_date = datetime.now().strftime("%Y%m%d")
-        base_time = "0500"  # 기본 발표 시각
+        base_date = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")
+        base_time = "2300"  # 전날 11시 발표 시각
 
         service_key = settings.KMA_API_KEY  # 기상청 공공 API 키를 settings.py에 추가
 
@@ -42,9 +43,10 @@ class Command(BaseCommand):
 
             url = (
                 f"http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst"
-                f"?serviceKey={service_key}&numOfRows=100&pageNo=1&dataType=JSON"
-                f"&base_date={base_date}&base_time={base_time}&nx={nx}&ny={ny}"
+                f"?serviceKey={service_key}&numOfRows=1000&pageNo=1&base_date={base_date}&base_time={base_time}&nx={nx}&ny={ny}&dataType=JSON"
             )
+
+            print(f"Request URL: {url}")
 
             response = requests.get(url)
             if response.status_code != 200:
@@ -63,10 +65,30 @@ class Command(BaseCommand):
                 self.stdout.write(
                     self.style.ERROR(f"Response content: {response.content}")
                 )
+
+                # XML 응답 처리
+                try:
+                    root = ET.fromstring(response.content)
+                    err_msg = root.find(".//errMsg").text
+                    return_auth_msg = root.find(".//returnAuthMsg").text
+                    return_reason_code = root.find(".//returnReasonCode").text
+
+                    self.stdout.write(
+                        self.style.ERROR(
+                            f"API Error: {err_msg}, {return_auth_msg}, {return_reason_code}"
+                        )
+                    )
+                except ET.ParseError as parse_error:
+                    self.stdout.write(
+                        self.style.ERROR(f"XML parse error: {parse_error}")
+                    )
+
                 continue
 
             if data["response"]["header"]["resultCode"] == "00":
                 items = data["response"]["body"]["items"]["item"]
+
+                weather_data = {}  # 모든 필드를 저장할 딕셔너리
 
                 for item in items:
                     fcst_date = item["fcstDate"]
@@ -74,27 +96,60 @@ class Command(BaseCommand):
                     category = item["category"]
                     fcst_value = item["fcstValue"]
 
-                    # 기존 데이터베이스의 데이터를 업데이트하거나 새로운 데이터를 생성합니다.
+                    # 당일 데이터만 필터링
+                    current_time = datetime.now()
+                    forecast_time = datetime.strptime(
+                        fcst_date + fcst_time, "%Y%m%d%H%M"
+                    )
+                    if forecast_time.date() != current_time.date():
+                        continue
+
+                    if (fcst_date, fcst_time) not in weather_data:
+                        weather_data[(fcst_date, fcst_time)] = {
+                            "POP": None,
+                            "TMX": None,
+                            "TMN": None,
+                            "SKY": None,
+                        }
+
+                    if category in weather_data[(fcst_date, fcst_time)]:
+                        weather_data[(fcst_date, fcst_time)][category] = (
+                            float(fcst_value) if "." in fcst_value else int(fcst_value)
+                        )
+
+                for (fcst_date, fcst_time), data in weather_data.items():
+                    print(
+                        f"Saving data for location {location.city}, date {fcst_date}, time {fcst_time}, data {data}"
+                    )
                     weather, created = Weather.objects.update_or_create(
                         location=location,
                         base_date=base_date,
                         fcst_date=fcst_date,
                         base_time=fcst_time,
                         defaults={
-                            category: fcst_value,
+                            "POP": data["POP"],
+                            "TMX": data["TMX"],
+                            "TMN": data["TMN"],
+                            "SKY": data["SKY"],
                         },
                     )
 
-                    # fcst_value는 항상 최신 값으로 유지합니다.
-                    if not created:
-                        setattr(weather, category, fcst_value)
-                        weather.fcst_value = fcst_value
-                        weather.save()
+                    if created:
+                        self.stdout.write(
+                            self.style.SUCCESS(
+                                f"Created new weather record for {location.city}, date {fcst_date}, time {fcst_time}"
+                            )
+                        )
+                    else:
+                        self.stdout.write(
+                            self.style.SUCCESS(
+                                f"Updated weather record for {location.city}, date {fcst_date}, time {fcst_time}"
+                            )
+                        )
 
                     # Debug 용 출력
                     print(
-                        f"Location: {location.city}, Date: {fcst_date}, Time: {fcst_time}, Category: {category}, Value: {fcst_value}"
+                        f"Location: {location.city}, Date: {fcst_date}, Time: {fcst_time}, Data: {data}"
                     )
-
             else:
                 self.stdout.write(self.style.ERROR("Failed to fetch data from API"))
