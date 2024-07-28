@@ -4,6 +4,8 @@ from .models import Weather
 
 
 class WeatherSerializer(serializers.ModelSerializer):
+    sky_status = serializers.SerializerMethodField()
+
     class Meta:
         model = Weather
         fields = [
@@ -12,8 +14,10 @@ class WeatherSerializer(serializers.ModelSerializer):
             "fcst_date",
             "base_time",
             "POP",
-            "TMX",
-            "TMN",
+            "TMP",
             "SKY",
-            "fcst_value",
+            "sky_status",
         ]
+
+    def get_sky_status(self, obj):
+        return obj.get_sky_status()
