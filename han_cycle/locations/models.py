@@ -28,6 +28,7 @@ class Location(models.Model):
     highlights = models.TextField(blank=True)  # 쉼표로 구분된 문자열
 
 
+
 class L_Category(models.Model):
     name = models.CharField(max_length=50, unique=True, null=False)
 

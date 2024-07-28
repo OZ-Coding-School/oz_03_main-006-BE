@@ -3,25 +3,18 @@ from locations.models import Location
 
 
 class Weather(models.Model):
-    location = models.ForeignKey(
-        Location, on_delete=models.CASCADE, related_name="weather_set"
-    )
-    base_date = models.DateField(null=False)  # 발표 일자
-    base_time = models.TimeField(null=False)  # 발표 시각
-    fcst_date = models.DateField(null=False)  # 예보 날짜
-    W_category = models.CharField(max_length=10, null=False)  # POP, SKY, TMN, TMX
-    fcst_value = models.CharField(max_length=20, null=False)  # 예보데이터 저장 필드
+    location = models.ForeignKey(Location, on_delete=models.CASCADE)
+    base_date = models.CharField(max_length=8)  # 예보 발표 날짜
+    fcst_date = models.CharField(max_length=8)  # 예보 대상 날짜
+    base_time = models.CharField(max_length=4)  # 예보 발표 시각
+    POP = models.IntegerField(null=True)  # 강수확률
+    TMX = models.IntegerField(null=True)  # 일 최고기온
+    TMN = models.IntegerField(null=True)  # 일 최저기온
+    SKY = models.IntegerField(null=True)  # 하늘상태
+    fcst_value = models.CharField(max_length=10)  # 예보 데이터 저장 필드
 
     class Meta:
-        unique_together = (
-            "location",
-            "base_date",
-            "base_time",
-            "fcst_date",
-            "W_category",
-        )
-        indexes = [
-            models.Index(
-                fields=["location", "fcst_date"]
-            ),  # 지역 및 예보 날짜 기준 검색
-        ]
+        unique_together = ("location", "fcst_date", "base_time")
+
+    def __str__(self):
+        return f"{self.location} - {self.fcst_date} {self.base_time} - POP: {self.POP}, TMX: {self.TMX}, TMN: {self.TMN}, SKY: {self.SKY}"

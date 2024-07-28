@@ -40,6 +40,7 @@ ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
     "52.79.207.68",
+    "43.202.53.249",
 ]
 
 # 프론트 테스트용
@@ -47,6 +48,10 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "https://hancycle.site",
 ]
+
+# front-end ports to access our app
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True  # if it's false, front-end can't get cookie
 
 
 # Retry configuration: 5 retries with exponential backoff (max wait 10 seconds)
@@ -265,10 +270,6 @@ ELASTICSEARCH_DSL = {
 }
 
 # 기상청 API요청
-KOREA_WEATHER_API_KEY = "OejFCZQLKQCvjrstrDIun/1WXSaBwtjQggiG9OqbwmB8lQ/lPap09spPZ1uy6mwdezb8xvR9y/z8N+zGTmUU2g=="
+KMA_API_KEY = os.getenv("KMA_API_KEY")
 # override default user django
 AUTH_USER_MODEL = "users.User"
-
-# front-end ports to access our app
-CORS_ORIGIN_ALLOW_ALL = True
-CORS_ALLOW_CREDENTIALS = True  # if it's false, front-end can't get cookie
