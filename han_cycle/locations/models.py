@@ -31,14 +31,13 @@ class Location(models.Model):
 
     def __str__(self):
         return self.city
-    
 
     def indexing(self):
         obj = LocationIndex(
-            meta={'id': self.id},
+            meta={"id": self.location_id},
             city=self.city,
             description=self.description,
-            highlights=self.highlights
+            highlights=self.highlights,
         )
         obj.save()
         return obj.to_dict(include_meta=True)

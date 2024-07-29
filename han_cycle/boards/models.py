@@ -34,7 +34,12 @@ class Post(models.Model):
         return self.title
 
     def indexing(self):
-        obj = PostIndex(meta={"id": self.id}, title=self.title, content=self.body)
+        obj = PostIndex(
+            meta={"id": self.id},
+            title=self.title,
+            content=self.body,
+            created_at=self.created_at,
+        )
         obj.save()
         return obj.to_dict(include_meta=True)
 

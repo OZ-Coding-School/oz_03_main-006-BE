@@ -67,8 +67,8 @@ def wait_for_elasticsearch():
         raise ConnectionError("Elasticsearch server is not available")
 
 
-# # Call the wait function before Django starts
-# wait_for_elasticsearch()
+# Call the wait function before Django starts
+wait_for_elasticsearch()
 
 # Application definition
 INSTALLED_APPS = [

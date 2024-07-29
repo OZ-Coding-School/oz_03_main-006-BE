@@ -2,7 +2,7 @@ from django.apps import AppConfig
 from django.conf import settings
 from elasticsearch_dsl.connections import connections
 
-from .search_indexes import LocationIndex, PostIndex, UserIndex
+from .search_index import LocationIndex, PostIndex, UserIndex
 
 
 class SearchConfig(AppConfig):

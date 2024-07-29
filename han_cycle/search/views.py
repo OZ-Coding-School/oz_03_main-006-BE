@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .search_indexes import LocationIndex, PostIndex, UserIndex
+from .search_index import LocationIndex, PostIndex, UserIndex
 
 
 class SearchView(APIView):
