@@ -1,11 +1,12 @@
 from elasticsearch import Elasticsearch
-from elasticsearch_dsl import Document, Text, connections
+from elasticsearch_dsl import Document, Keyword, Text, connections
 
 # Connect to the Elasticsearch server
 connections.create_connection(hosts=["http://localhost:9200"])
 
 
 class PostIndex(Document):
+    user_id = Keyword()
     title = Text()
     content = Text()
 
