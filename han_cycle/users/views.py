@@ -52,7 +52,19 @@ class LoginView(APIView):
             required=["nickname", "password"],
         ),
         responses={
-            200: "Login successful",
+            200: openapi.Response(
+                description="Login successful",
+                examples={
+                    "application/json": {
+                        "id": 1,
+                        "nickname": "example_user",
+                        "profile_image": "example_image_url",
+                        "email": "user@example.com",
+                        "username": "example_username",
+                        # No JWT here
+                    }
+                },
+            ),
             400: "Bad Request",
             401: "Authentication Failed",
         },
@@ -80,9 +92,13 @@ class LoginView(APIView):
         }
         token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
+        # Set the JWT token in an HTTP-only cookie
         response = Response()
         response.set_cookie(key="jwt", value=token, httponly=True)
-        response.data = {"jwt": token}
+
+        # Serialize the user data without including the JWT token
+        user_data = UserSerializer(user).data
+        response.data = user_data
 
         return response
 
