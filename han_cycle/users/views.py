@@ -63,7 +63,7 @@ class LoginView(APIView):
                         "username": "example_username",
                         # No JWT here
                     }
-                }
+                },
             ),
             400: "Bad Request",
             401: "Authentication Failed",

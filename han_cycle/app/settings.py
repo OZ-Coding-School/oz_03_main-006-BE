@@ -41,7 +41,7 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
     "52.79.207.68",
     "43.202.53.249",
-    "13.125.183.76 ",
+    "13.125.183.76",
 ]
 
 # 프론트 테스트용
@@ -67,8 +67,8 @@ def wait_for_elasticsearch():
         raise ConnectionError("Elasticsearch server is not available")
 
 
-# # Call the wait function before Django starts
-# wait_for_elasticsearch()
+# Call the wait function before Django starts
+wait_for_elasticsearch()
 
 # Application definition
 INSTALLED_APPS = [
@@ -265,10 +265,12 @@ DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 # Media settings
 MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
 # 엘라스틱서치 의존성
 ELASTICSEARCH_DSL = {
     "default": {"hosts": "http://elasticsearch:9200"},
 }
+
 
 # 기상청 API요청
 KMA_API_KEY = os.getenv("KMA_API_KEY")

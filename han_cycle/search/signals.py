@@ -2,7 +2,7 @@ from django.apps import apps
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
-from .search_indexes import LocationIndex, PostIndex, UserIndex
+from .search_index import LocationIndex, PostIndex, UserIndex
 
 
 # 게시글(Post) 모델의 저장 후 신호를 처리하는 수신기

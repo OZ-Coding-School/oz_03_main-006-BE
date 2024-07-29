@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from locations.models import Location
+from search.search_index import PostIndex
 from tinymce.models import HTMLField
 from users.models import User
 
@@ -31,6 +32,17 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
+
+    def indexing(self):
+        obj = PostIndex(
+            meta={"id": self.id},
+            user_id=self.user_id.id,
+            title=self.title,
+            content=self.body,
+            created_at=self.created_at,
+        )
+        obj.save()
+        return obj.to_dict(include_meta=True)
 
 
 # 이미지 모델, 게시물 post전 이미지를 로드해야하기 때문에 board값이 null이어도 허용할 수 있도록 함

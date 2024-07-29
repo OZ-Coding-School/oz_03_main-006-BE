@@ -23,6 +23,6 @@ retrying==1.3.3 #엘라스틱 웨이팅
 xmltodict #날씨
 requests #스크래핑
 beautifulsoup4 #스크래핑
-Pillow #도시이미지사이즈
 tzdata>=2024.1
+elasticsearch>=7.10.0
 

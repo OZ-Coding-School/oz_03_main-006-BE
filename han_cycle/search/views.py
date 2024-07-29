@@ -1,12 +1,12 @@
 from django.shortcuts import render
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from elasticsearch_dsl import Search
+from elasticsearch_dsl import Q, Search
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .search_indexes import LocationIndex, PostIndex, UserIndex
+from .search_index import LocationIndex, PostIndex, UserIndex
 
 
 class SearchView(APIView):
@@ -73,10 +73,32 @@ class SearchView(APIView):
             for hit in location_response
         ]
 
+        # 추가된 부분: 사용자 검색 결과에서 각 사용자가 작성한 게시글 검색
+        user_post_results = []
+        for user in user_results:
+            user_id = user["id"]
+            user_post_search = Search(using="default", index="posts").query(
+                "term", user_id=user_id
+            )
+            user_post_response = user_post_search.execute()
+            user_post_results.extend(
+                [
+                    {
+                        "title": hit.title,
+                        "content": hit.content,
+                        "created_at": hit.created_at,
+                        "id": hit.meta.id,
+                        "user_id": user_id,
+                    }
+                    for hit in user_post_response
+                ]
+            )
+
         # 결과를 딕셔너리로 정리
         results = {
             "posts": post_results,
             "users": user_results,
+            "user_posts": user_post_results,
             "locations": location_results,
             "query": query,
         }
