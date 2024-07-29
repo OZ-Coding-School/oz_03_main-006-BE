@@ -52,6 +52,27 @@ def posts(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(
+    method="get",
+    operation_description="Retrieve a list of posts for a specific user.",
+    responses={200: PostListSerializer(many=True)},
+    manual_parameters=[
+        openapi.Parameter(
+            "user_id",
+            openapi.IN_PATH,
+            description="ID of the user to retrieve posts for",
+            type=openapi.TYPE_INTEGER,
+        )
+    ],
+)
+@api_view(["GET"])
+def GetUserPost(request, user_id):
+    if request.method == "GET":
+        user_posts = Post.objects.filter(user_id=user_id)
+        serializer = PostListSerializer(user_posts, many=True)
+        return Response(serializer.data)
+
+
 class PostDetailView(APIView):
     @swagger_auto_schema(
         operation_description="게시물 상세 조회",
