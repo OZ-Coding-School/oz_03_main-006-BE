@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from search.search_index import LocationIndex
 
 
@@ -47,7 +49,15 @@ class LocationImage(models.Model):
     location = models.ForeignKey(
         Location, on_delete=models.CASCADE, related_name="images"
     )
-    image_url = models.URLField(max_length=200)
+    image = models.ImageField(upload_to="locations/")  # S3에 저장될 이미지 필드
+    image_url = models.URLField(max_length=200, blank=True)  # URL 필드
 
     def __str__(self):
-        return self.image_url
+        return f"{self.location.city} - Image"
+
+
+@receiver(post_save, sender=LocationImage)
+def update_image_url(sender, instance, **kwargs):
+    if not instance.image_url:
+        instance.image_url = instance.image.url
+        instance.save()
