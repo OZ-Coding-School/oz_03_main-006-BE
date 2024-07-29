@@ -6,9 +6,14 @@ from .models import Comment, Image, Like, Post
 
 # 전체 게시글 목록 나타내는 시리얼라이저
 class PostListSerializer(serializers.ModelSerializer):
+    likes_count = serializers.SerializerMethodField()
+
     class Meta:
         model = Post
         fields = "__all__"
+
+    def get_likes_count(self, obj):
+        return Like.objects.filter(post=obj).count()
 
 
 # 댓글 시리얼라이저

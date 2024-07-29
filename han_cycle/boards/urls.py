@@ -4,6 +4,7 @@ from .views import (
     CommentCreateView,
     CommentDetailView,
     CommentListView,
+    GetUserPost,
     LikeView,
     PostDetailView,
     PostsByLocationView,
@@ -27,5 +28,6 @@ urlpatterns = [
         "<int:location_id>/posts/",
         PostsByLocationView.as_view(),
         name="posts_by_location",
-    ),  # 엔드포인트 추가
+    ),
+    path("user/<int:user_id>/", GetUserPost, name="get_user_post"),  # 엔드포인트 추가
 ]
