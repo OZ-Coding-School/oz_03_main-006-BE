@@ -24,3 +24,4 @@ xmltodict #날씨
 requests #스크래핑
 beautifulsoup4 #스크래핑
 Pillow #도시이미지사이즈
+tzdata>=2024.1
