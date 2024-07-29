@@ -15,5 +15,5 @@ class User(AbstractUser):
         upload_to="profile_images/", null=True, blank=True
     )
 
-    USERNAME_FIELD = "nickname"
+    USERNAME_FIELD = 'nickname'
     REQUIRED_FIELDS = []  # Corrected this to plural
