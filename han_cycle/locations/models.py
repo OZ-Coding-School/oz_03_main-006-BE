@@ -1,4 +1,5 @@
 from django.db import models
+from search.search_index import LocationIndex
 
 
 class Location(models.Model):
@@ -30,6 +31,17 @@ class Location(models.Model):
 
     def __str__(self):
         return self.city
+    
+
+    def indexing(self):
+        obj = LocationIndex(
+            meta={'id': self.id},
+            city=self.city,
+            description=self.description,
+            highlights=self.highlights
+        )
+        obj.save()
+        return obj.to_dict(include_meta=True)
 
 
 class LocationImage(models.Model):
