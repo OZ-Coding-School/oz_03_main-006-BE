@@ -1,3 +1,4 @@
+from locations.models import Location  # 지역값추가
 from rest_framework import serializers
 
 from .models import Comment, Image, Like, Post
@@ -13,6 +14,7 @@ class PostListSerializer(serializers.ModelSerializer):
 # 댓글 시리얼라이저
 class CommentSerializer(serializers.ModelSerializer):
     nickname = serializers.SerializerMethodField()
+
     class Meta:
         model = Comment
         fields = "__all__"
@@ -38,6 +40,9 @@ class DetailPostSerializer(serializers.ModelSerializer):
         source="comments.count", read_only=True
     )  # 댓글 갯수
     likes_count = serializers.SerializerMethodField()
+    location = serializers.SlugRelatedField(
+        slug_field="city", read_only=True
+    )  # 지역값추가
 
     class Meta:
         model = Post
@@ -60,3 +65,4 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = "__all__"
+        ref_name = "BoardsPostSerializer"  # 충돌 방지를 위한 ref_name 추가

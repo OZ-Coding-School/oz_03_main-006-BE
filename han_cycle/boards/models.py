@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from locations.models import Location
 from tinymce.models import HTMLField
 from users.models import User
 
@@ -17,7 +18,9 @@ class Post(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts")
     title = models.CharField(max_length=200, null=False)
     tag = models.CharField(max_length=200, null=False)
-    region = models.IntegerField(default=0)
+    location = models.ForeignKey(
+        Location, on_delete=models.CASCADE, related_name="posts"
+    )  # location 필드 추가
     body = HTMLField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

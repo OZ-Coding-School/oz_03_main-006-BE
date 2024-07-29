@@ -6,9 +6,12 @@ from .views import (
     CommentListView,
     LikeView,
     PostDetailView,
+    PostsByLocationView,
     UploadImageView,
     posts,
 )
+
+# 새 뷰 추가
 
 urlpatterns = [
     path("", posts, name="posts"),
@@ -20,4 +23,9 @@ urlpatterns = [
     ),
     path("upload_image/", UploadImageView.as_view(), name="upload_image"),
     path("<int:pk>/like/", LikeView.as_view(), name="click_like"),
+    path(
+        "<int:location_id>/posts/",
+        PostsByLocationView.as_view(),
+        name="posts_by_location",
+    ),  # 엔드포인트 추가
 ]

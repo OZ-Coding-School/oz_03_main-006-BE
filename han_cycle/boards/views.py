@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_list_or_404, get_object_or_404
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status
+from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -255,3 +255,11 @@ class LikeView(APIView):
         except Like.DoesNotExist:
             Like.objects.create(user=user, post=post)
             return Response({"message": "좋아요"}, status=status.HTTP_201_CREATED)
+
+
+class PostsByLocationView(generics.ListAPIView):
+    serializer_class = PostListSerializer
+
+    def get_queryset(self):
+        location_id = self.kwargs["location_id"]
+        return Post.objects.filter(location__location_id=location_id)[:8]

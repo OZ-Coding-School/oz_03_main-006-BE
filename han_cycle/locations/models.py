@@ -22,6 +22,7 @@ class Location(models.Model):
         (17, "제주도"),
     ]
     location_id = models.IntegerField(choices=CITY_CHOICES, primary_key=True)
+    l_category = models.CharField(max_length=100, blank=True, null=True)
     city = models.CharField(max_length=100, null=False)
     popular_cities = models.TextField(blank=True)
     description = models.TextField(blank=True)
@@ -29,24 +30,6 @@ class Location(models.Model):
 
     def __str__(self):
         return self.city
-
-
-class L_Category(models.Model):
-    name = models.CharField(max_length=50, unique=True, null=False)
-
-    def __str__(self):
-        return self.name
-
-
-class LocationCategory(models.Model):
-    location = models.ForeignKey(Location, on_delete=models.CASCADE)
-    L_category = models.ForeignKey(L_Category, on_delete=models.CASCADE)
-
-    class Meta:
-        unique_together = ("location", "L_category")
-
-    def __str__(self):
-        return f"{self.location.city} - {self.L_category.name}"
 
 
 class LocationImage(models.Model):
