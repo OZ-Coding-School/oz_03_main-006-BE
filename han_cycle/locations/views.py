@@ -3,8 +3,13 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics
 from rest_framework.response import Response
 
-from .models import Location
-from .serializers import HighlightSerializer, LocationSerializer, PostSerializer
+from .models import Location, LocationImage
+from .serializers import (
+    HighlightSerializer,
+    LocationImageSerializer,
+    LocationSerializer,
+    PostSerializer,
+)
 
 
 class LocationListView(generics.ListAPIView):
@@ -61,3 +66,17 @@ class LocationHighlightDetailView(generics.RetrieveAPIView):
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
+
+
+class LocationImagesView(generics.ListAPIView):
+    serializer_class = LocationImageSerializer
+
+    @swagger_auto_schema(
+        operation_description="Get images for a specific location",
+        responses={200: LocationImageSerializer(many=True)},
+    )
+    def get(self, request, *args, **kwargs):
+        location_id = self.kwargs.get("location_id")
+        images = LocationImage.objects.filter(location__location_id=location_id)
+        serializer = self.get_serializer(images, many=True)
+        return Response(serializer.data)

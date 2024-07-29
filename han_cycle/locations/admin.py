@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 from .models import Location, LocationImage
 
@@ -19,10 +21,17 @@ class LocationAdmin(admin.ModelAdmin):
         "description",
         "highlights",
         "l_category",
-    )  # L_category 추가
+    )
     search_fields = ("city", "description", "l_category")
 
 
 @admin.register(LocationImage)
 class LocationImageAdmin(admin.ModelAdmin):
     list_display = ("location", "image_url")
+
+
+@receiver(post_save, sender=LocationImage)
+def update_image_url(sender, instance, **kwargs):
+    if not instance.image_url:
+        instance.image_url = instance.image.url
+        instance.save()

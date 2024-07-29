@@ -4,6 +4,7 @@ from .views import (
     HighlightListView,
     LocationDetailView,
     LocationHighlightDetailView,
+    LocationImagesView,
     LocationListView,
 )
 
@@ -15,5 +16,10 @@ urlpatterns = [
         "<int:location_id>/highlight/",
         LocationHighlightDetailView.as_view(),
         name="location_highlight_detail",
+    ),
+    path(
+        "<location_id>/images/",
+        LocationImagesView.as_view(),
+        name="location-images",
     ),
 ]
