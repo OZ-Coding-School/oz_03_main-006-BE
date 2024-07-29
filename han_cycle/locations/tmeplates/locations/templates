@@ -1,0 +1,21 @@
+<!-- locations/templates/locations/location_detail.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ location.city }} Details</title>
+</head>
+<body>
+    <h1>{{ location.city }}</h1>
+    <p>{{ location.description }}</p>
+    <p><strong>인기도시:</strong> {{ location.popular_cities }}</p>
+    <p><strong>하이라이트:</strong> {{ location.highlights }}</p>
+    
+    <h2>Images</h2>
+    {% for image in location.images.all %}
+        <img src="{{ image.image_url }}" width="500" height="350" alt="{{ location.city }}">
+    {% endfor %}
+</body>
+</html>
