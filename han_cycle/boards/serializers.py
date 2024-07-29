@@ -61,10 +61,8 @@ class PostSerializer(serializers.ModelSerializer):
     images = ImageSerializer(
         many=True, read_only=True
     )  # 이미지 정보를 포함하기 위해 ImageSerializer 사용
-    location = serializers.SlugRelatedField(
-        slug_field="city", queryset=Location.objects.all()
-    )
 
     class Meta:
         model = Post
         fields = "__all__"
+        ref_name = "BoardsPostSerializer"  # 충돌 방지를 위한 ref_name 추가

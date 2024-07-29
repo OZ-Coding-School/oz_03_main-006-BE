@@ -11,6 +11,8 @@ from .views import (
     posts,
 )
 
+# 새 뷰 추가
+
 urlpatterns = [
     path("", posts, name="posts"),
     path("<int:pk>/", PostDetailView.as_view(), name="post_detail"),
@@ -25,5 +27,5 @@ urlpatterns = [
         "<int:location_id>/posts/",
         PostsByLocationView.as_view(),
         name="posts_by_location",
-    ),
+    ),  # 엔드포인트 추가
 ]

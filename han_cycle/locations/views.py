@@ -1,9 +1,10 @@
-from drf_yasg import openapi
+from boards.models import Post
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics
+from rest_framework.response import Response
 
 from .models import Location
-from .serializers import HighlightSerializer, LocationSerializer
+from .serializers import HighlightSerializer, LocationSerializer, PostSerializer
 
 
 class LocationListView(generics.ListAPIView):
@@ -27,7 +28,14 @@ class LocationDetailView(generics.RetrieveAPIView):
         responses={200: LocationSerializer()},
     )
     def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
+        location = self.get_object()
+        top_posts = Post.objects.filter(location=location).order_by("-view_count")[:8]
+        top_posts_data = PostSerializer(top_posts, many=True).data
+
+        location_data = self.get_serializer(location).data
+        location_data["top_posts"] = top_posts_data
+
+        return Response(location_data)
 
 
 class HighlightListView(generics.ListAPIView):
