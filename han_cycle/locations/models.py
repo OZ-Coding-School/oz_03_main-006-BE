@@ -27,9 +27,15 @@ class Location(models.Model):
     description = models.TextField(blank=True)
     highlights = models.TextField(blank=True)  # 쉼표로 구분된 문자열
 
+    def __str__(self):
+        return self.city
+
 
 class L_Category(models.Model):
     name = models.CharField(max_length=50, unique=True, null=False)
+
+    def __str__(self):
+        return self.name
 
 
 class LocationCategory(models.Model):
@@ -39,9 +45,15 @@ class LocationCategory(models.Model):
     class Meta:
         unique_together = ("location", "L_category")
 
+    def __str__(self):
+        return f"{self.location.city} - {self.L_category.name}"
+
 
 class LocationImage(models.Model):
     location = models.ForeignKey(
         Location, on_delete=models.CASCADE, related_name="images"
     )
     image_url = models.URLField(max_length=200)
+
+    def __str__(self):
+        return self.image_url
