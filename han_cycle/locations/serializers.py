@@ -1,4 +1,3 @@
-# locations/serializers.py
 from rest_framework import serializers
 
 from .models import Location, LocationImage
@@ -18,6 +17,7 @@ class LocationImageSerializer(serializers.ModelSerializer):
 
 class LocationSerializer(serializers.ModelSerializer):
     images = LocationImageSerializer(many=True, read_only=True)
+    l_category = serializers.SerializerMethodField()
 
     class Meta:
         model = Location
@@ -28,4 +28,8 @@ class LocationSerializer(serializers.ModelSerializer):
             "description",
             "highlights",
             "images",
+            "l_category",
         ]
+
+    def get_l_category(self, obj):
+        return obj.l_category

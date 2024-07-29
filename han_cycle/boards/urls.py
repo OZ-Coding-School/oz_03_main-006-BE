@@ -6,6 +6,7 @@ from .views import (
     CommentListView,
     LikeView,
     PostDetailView,
+    PostsByLocationView,
     UploadImageView,
     posts,
 )
@@ -20,4 +21,9 @@ urlpatterns = [
     ),
     path("upload_image/", UploadImageView.as_view(), name="upload_image"),
     path("<int:pk>/like/", LikeView.as_view(), name="click_like"),
+    path(
+        "<int:location_id>/posts/",
+        PostsByLocationView.as_view(),
+        name="posts_by_location",
+    ),
 ]
