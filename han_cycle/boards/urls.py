@@ -11,6 +11,8 @@ from .views import (
     PostsByLocationPopularView,
     UploadImageView,
     posts,
+    AllPostsByLocationLatestView,  
+    AllPostsByLocationPopularView,
 )
 
 # 새 뷰 추가
@@ -35,5 +37,15 @@ urlpatterns = [
         "<int:location_id>/popular/",
         PostsByLocationPopularView.as_view(),
         name="posts_by_location_popular",
+    ),
+    path(
+        "<int:location_id>/all/latest/",
+        AllPostsByLocationLatestView.as_view(),
+        name="all_posts_by_location_latest",
+    ),
+    path(
+        "<int:location_id>/all/popular/",
+        AllPostsByLocationPopularView.as_view(),
+        name="all_posts_by_location_popular",
     ),
 ]

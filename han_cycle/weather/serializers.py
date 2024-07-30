@@ -14,7 +14,8 @@ class WeatherSerializer(serializers.ModelSerializer):
             "fcst_date",
             "base_time",
             "POP",
-            "TMP",
+            "TMN",
+            "TMX",
             "SKY",
             "sky_status",
         ]

@@ -32,10 +32,11 @@ class Command(BaseCommand):
             17: {"nx": 52, "ny": 38},  # 제주도
         }
 
-        base_date = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")  # 전날 날짜
-        base_time = "2300"  # 23:00 발표 시각
+        # 현재 날짜와 내일 날짜 계산
+        base_date = datetime.now().strftime("%Y%m%d")
+        base_time = "0220"  # 새벽 02:00 발표 시각
 
-        service_key = settings.KMA_API_KEY  # 기상청 공공 API 키를 settings.py에 추가
+        service_key = settings.KMA_API_KEY  # 기상청 공공 API 키
 
         for location_id, coords in location_codes.items():
             location = Location.objects.get(pk=location_id)
@@ -88,59 +89,65 @@ class Command(BaseCommand):
             if data["response"]["header"]["resultCode"] == "00":
                 items = data["response"]["body"]["items"]["item"]
 
-                weather_data = {}  # 모든 필드를 저장할 딕셔너리
+                weather_data = {
+                    base_date: {},
+                }  # 날씨 데이터를 저장할 딕셔너리
 
                 for item in items:
                     fcst_date = item["fcstDate"]
-                    fcst_time = item["fcstTime"]
                     category = item["category"]
                     fcst_value = item["fcstValue"]
 
-                    # 모든 데이터를 필터링 없이 저장
-                    if (fcst_date, fcst_time) not in weather_data:
-                        weather_data[(fcst_date, fcst_time)] = {
+                    # KeyError를 방지하기 위해 날짜의 엔트리가 존재하지 않으면 생성
+                    if fcst_date not in weather_data:
+                        weather_data[fcst_date] = {
                             "POP": None,
-                            "TMP": None,
+                            "TMN": None,
+                            "TMX": None,
                             "SKY": None,
                         }
 
-                    if category in weather_data[(fcst_date, fcst_time)]:
-                        weather_data[(fcst_date, fcst_time)][category] = (
-                            float(fcst_value) if category == "TMP" else int(fcst_value)
+                    # 요청한 카테고리 데이터만 저장
+                    if category in ["POP", "TMN", "TMX", "SKY"]:
+                        if category in ["TMN", "TMX"]:  # 실수로 변환할 값
+                            fcst_value = float(fcst_value)
+                        else:  # 정수로 변환할 값
+                            fcst_value = int(fcst_value)
+
+                        weather_data[fcst_date][category] = fcst_value
+
+                # Debug용 출력
+                for date, data in weather_data.items():
+                    print(f"Location: {location.city}, Date: {date}, Data: {data}")
+
+                # Save to the database
+                for date, data in weather_data.items():
+                    if any(
+                        value is not None for value in data.values()
+                    ):  # 적어도 하나의 값이 있는 경우에만 저장
+                        weather, created = Weather.objects.update_or_create(
+                            location=location,
+                            base_date=base_date,
+                            fcst_date=date,
+                            defaults={
+                                "POP": data.get("POP"),
+                                "TMN": data.get("TMN"),
+                                "TMX": data.get("TMX"),
+                                "SKY": data.get("SKY"),
+                            },
                         )
 
-                for (fcst_date, fcst_time), data in weather_data.items():
-                    print(
-                        f"Saving data for location {location.city}, date {fcst_date}, time {fcst_time}, data {data}"
-                    )
-                    weather, created = Weather.objects.update_or_create(
-                        location=location,
-                        base_date=base_date,
-                        fcst_date=fcst_date,
-                        base_time=fcst_time,
-                        defaults={
-                            "POP": data["POP"],
-                            "TMP": data["TMP"],
-                            "SKY": data["SKY"],
-                        },
-                    )
-
-                    if created:
-                        self.stdout.write(
-                            self.style.SUCCESS(
-                                f"Created new weather record for {location.city}, date {fcst_date}, time {fcst_time}"
+                        if created:
+                            self.stdout.write(
+                                self.style.SUCCESS(
+                                    f"Created new weather record for {location.city}, date {date}"
+                                )
                             )
-                        )
-                    else:
-                        self.stdout.write(
-                            self.style.SUCCESS(
-                                f"Updated weather record for {location.city}, date {fcst_date}, time {fcst_time}"
+                        else:
+                            self.stdout.write(
+                                self.style.SUCCESS(
+                                    f"Updated weather record for {location.city}, date {date}"
+                                )
                             )
-                        )
-
-                    # Debug 용 출력
-                    print(
-                        f"Location: {location.city}, Date: {fcst_date}, Time: {fcst_time}, Data: {data}"
-                    )
             else:
                 self.stdout.write(self.style.ERROR("Failed to fetch data from API"))

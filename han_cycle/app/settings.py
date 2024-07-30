@@ -189,7 +189,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Asia/Seoul"  # 한국 시간대 설정
+USE_TZ = True  # 타임존 사용
 
 USE_I18N = True
 

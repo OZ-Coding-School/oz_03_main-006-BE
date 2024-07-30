@@ -34,7 +34,11 @@ class CommentSerializer(serializers.ModelSerializer):
         return obj.user_id.nickname  # User 모델의 nickname 필드를 가져옴
 
     def get_profile_image(self, obj):
-        return obj.user_id.profile_image.url if obj.user_id.profile_image else None  # User 모델의 프로필 이미지 URL 가져오기
+
+        return (
+            obj.user_id.profile_image.url if obj.user_id.profile_image else None   # User 모델의 프로필 이미지 URL 가져오기
+        )  # User 모델의 프로필 이미지 URL 가져오기
+
 
 
 # 이미지 시리얼라이저
@@ -53,6 +57,7 @@ class DetailPostSerializer(serializers.ModelSerializer):
         source="comments.count", read_only=True
     )  # 댓글 갯수
     likes_count = serializers.SerializerMethodField()
+
     location = serializers.SlugRelatedField(
         slug_field="city", read_only=True
     )  # 지역값추가
@@ -71,7 +76,11 @@ class DetailPostSerializer(serializers.ModelSerializer):
         return Like.objects.filter(post=obj).count()
 
     def get_profile_image(self, obj):
-        return obj.user_id.profile_image.url if obj.user_id.profile_image else None  # User 모델의 프로필 이미지 URL 가져오기
+
+        return (
+            obj.user_id.profile_image.url if obj.user_id.profile_image else None
+        )  # User 모델의 프로필 이미지 URL 가져오기
+
 
 
 # 게시글 작성 시리얼라이저
