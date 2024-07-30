@@ -260,24 +260,23 @@ class UploadImageView(APIView):
 
 
 class LikeView(APIView):
-    # permission_classes = [IsAuthenticated]
+    #permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
         responses={201: "좋아요", 204: "좋아요 취소", 404: "Not Found"}
     )
     def post(self, request, pk):
         post = get_object_or_404(Post, pk=pk)
-        # user = request.user
+        #user = request.user
         user_id = request.data.get("user_id")  # request.data에서 user_id 가져오기
         try:
-            # like = Like.objects.get(user=user, post=post)
+
             like = Like.objects.get(user=user_id, post=post)
             like.delete()
             return Response(
                 {"message": "좋아요 취소"}, status=status.HTTP_204_NO_CONTENT
             )
         except Like.DoesNotExist:
-            # Like.objects.create(user=user, post=post)
             Like.objects.create(user_id=user_id, post=post)
             return Response({"message": "좋아요"}, status=status.HTTP_201_CREATED)
 
