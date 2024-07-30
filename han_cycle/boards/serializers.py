@@ -7,6 +7,7 @@ from .models import Comment, Image, Like, Post
 # 전체 게시글 목록 나타내는 시리얼라이저
 class PostListSerializer(serializers.ModelSerializer):
     likes_count = serializers.SerializerMethodField()
+    nickname = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
@@ -15,10 +16,14 @@ class PostListSerializer(serializers.ModelSerializer):
     def get_likes_count(self, obj):
         return Like.objects.filter(post=obj).count()
 
+    def get_nickname(self, obj):
+        return obj.user_id.nickname  # User 모델의 nickname 필드를 가져옴
+
 
 # 댓글 시리얼라이저
 class CommentSerializer(serializers.ModelSerializer):
     nickname = serializers.SerializerMethodField()
+    profile_image = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
@@ -27,6 +32,9 @@ class CommentSerializer(serializers.ModelSerializer):
 
     def get_nickname(self, obj):
         return obj.user_id.nickname  # User 모델의 nickname 필드를 가져옴
+
+    def get_profile_image(self, obj):
+        return obj.user_id.profile_image  # User 모델의 프로필 필드를 가져옴
 
 
 # 이미지 시리얼라이저
@@ -49,6 +57,8 @@ class DetailPostSerializer(serializers.ModelSerializer):
         slug_field="city", read_only=True
     )  # 지역값추가
 
+    profile_image = serializers.SerializerMethodField()
+
     class Meta:
         model = Post
         fields = "__all__"
@@ -59,6 +69,9 @@ class DetailPostSerializer(serializers.ModelSerializer):
 
     def get_likes_count(self, obj):
         return Like.objects.filter(post=obj).count()
+
+    def get_profile_image(self, obj):
+        return obj.user_id.profile_image
 
 
 # 게시글 작성 시리얼라이저
