@@ -39,6 +39,7 @@ class Post(models.Model):
             user_id=self.user_id.id,
             title=self.title,
             content=self.body,
+            thumbnail=self.thumbnail.url if self.thumbnail else "",
             created_at=self.created_at,
         )
         obj.save()
