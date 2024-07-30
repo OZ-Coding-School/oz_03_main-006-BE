@@ -53,6 +53,7 @@ class DetailPostSerializer(serializers.ModelSerializer):
         source="comments.count", read_only=True
     )  # 댓글 갯수
     likes_count = serializers.SerializerMethodField()
+
     location = serializers.SlugRelatedField(
         slug_field="city", read_only=True
     )  # 지역값추가
@@ -72,6 +73,7 @@ class DetailPostSerializer(serializers.ModelSerializer):
 
     def get_profile_image(self, obj):
         return obj.user_id.profile_image
+
 
 
 # 게시글 작성 시리얼라이저

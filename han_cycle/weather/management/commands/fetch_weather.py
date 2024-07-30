@@ -32,8 +32,8 @@ class Command(BaseCommand):
             17: {"nx": 52, "ny": 38},  # 제주도
         }
 
-        base_date = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")  # 전날 날짜
-        base_time = "2300"  # 23:00 발표 시각
+        base_date = datetime.now().strftime("%Y%m%d")  # 오늘 날짜
+        base_time = "0800"  # 08:00 발표 시각
 
         service_key = settings.KMA_API_KEY  # 기상청 공공 API 키를 settings.py에 추가
 
@@ -96,18 +96,26 @@ class Command(BaseCommand):
                     category = item["category"]
                     fcst_value = item["fcstValue"]
 
-                    # 모든 데이터를 필터링 없이 저장
-                    if (fcst_date, fcst_time) not in weather_data:
-                        weather_data[(fcst_date, fcst_time)] = {
-                            "POP": None,
-                            "TMP": None,
-                            "SKY": None,
-                        }
+                    # 필터링 로직 추가
+                    # 오늘과 내일 08:00 데이터만 필터링
+                    if fcst_time == "0800" and (
+                        fcst_date == base_date
+                        or fcst_date
+                        == (datetime.now() + timedelta(days=1)).strftime("%Y%m%d")
+                    ):
+                        if (fcst_date, fcst_time) not in weather_data:
+                            weather_data[(fcst_date, fcst_time)] = {
+                                "POP": None,
+                                "TMP": None,
+                                "SKY": None,
+                            }
 
-                    if category in weather_data[(fcst_date, fcst_time)]:
-                        weather_data[(fcst_date, fcst_time)][category] = (
-                            float(fcst_value) if category == "TMP" else int(fcst_value)
-                        )
+                        if category in weather_data[(fcst_date, fcst_time)]:
+                            weather_data[(fcst_date, fcst_time)][category] = (
+                                float(fcst_value)
+                                if category == "TMP"
+                                else int(fcst_value)
+                            )
 
                 for (fcst_date, fcst_time), data in weather_data.items():
                     print(

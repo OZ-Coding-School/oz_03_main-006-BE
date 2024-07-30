@@ -113,7 +113,6 @@ class PostDetailView(APIView):
             "post": post_data,
             "images": image_data,
         }
-
         # JSON 형식으로 응답합니다.
         return JsonResponse(response_data)
 
