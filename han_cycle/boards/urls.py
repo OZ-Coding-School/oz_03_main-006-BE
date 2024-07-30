@@ -7,8 +7,7 @@ from .views import (
     GetUserPost,
     LikeView,
     PostDetailView,
-    PostsByLocationLatestView,
-    PostsByLocationPopularView,
+    PostsByLocationView,
     UploadImageView,
     posts,
 )
@@ -25,15 +24,10 @@ urlpatterns = [
     ),
     path("upload_image/", UploadImageView.as_view(), name="upload_image"),
     path("<int:pk>/like/", LikeView.as_view(), name="click_like"),
-    path("user/<int:user_id>/", GetUserPost, name="get_user_post"),
     path(
-        "<int:location_id>/latest/",
-        PostsByLocationLatestView.as_view(),
-        name="posts_by_location_latest",
+        "<int:location_id>/posts/",
+        PostsByLocationView.as_view(),
+        name="posts_by_location",
     ),
-    path(
-        "<int:location_id>/popular/",
-        PostsByLocationPopularView.as_view(),
-        name="posts_by_location_popular",
-    ),
+    path("user/<int:user_id>/", GetUserPost, name="get_user_post"),  # 엔드포인트 추가
 ]

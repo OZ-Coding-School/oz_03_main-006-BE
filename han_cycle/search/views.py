@@ -55,7 +55,6 @@ class SearchView(APIView):
                 "title": hit.title,
                 "content": hit.content,
                 "created_at": hit.created_at,
-                "thumbnail": hit.thumbnail,
                 "id": hit.meta.id,
             }
             for hit in post_response

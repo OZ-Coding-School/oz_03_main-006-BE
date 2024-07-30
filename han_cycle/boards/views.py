@@ -7,13 +7,11 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Comment, Image, Like, Post
-from .pagination import CustomPagination
 from .serializers import (
     CommentSerializer,
     DetailPostSerializer,
@@ -280,53 +278,9 @@ class LikeView(APIView):
             return Response({"message": "좋아요"}, status=status.HTTP_201_CREATED)
 
 
-class PostsByLocationLatestView(generics.ListAPIView):
+class PostsByLocationView(generics.ListAPIView):
     serializer_class = PostListSerializer
-    pagination_class = CustomPagination
-
-    @swagger_auto_schema(
-        operation_description="Get latest posts for a specific location",
-        responses={200: PostListSerializer(many=True)},
-        manual_parameters=[
-            openapi.Parameter(
-                "location_id",
-                openapi.IN_PATH,
-                description="ID of the location",
-                type=openapi.TYPE_INTEGER,
-            )
-        ],
-    )
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
         location_id = self.kwargs["location_id"]
-        return Post.objects.filter(location__location_id=location_id).order_by(
-            "-created_at"
-        )
-
-
-class PostsByLocationPopularView(generics.ListAPIView):
-    serializer_class = PostListSerializer
-    pagination_class = CustomPagination
-
-    @swagger_auto_schema(
-        operation_description="Get most popular posts for a specific location",
-        responses={200: PostListSerializer(many=True)},
-        manual_parameters=[
-            openapi.Parameter(
-                "location_id",
-                openapi.IN_PATH,
-                description="ID of the location",
-                type=openapi.TYPE_INTEGER,
-            )
-        ],
-    )
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
-    def get_queryset(self):
-        location_id = self.kwargs["location_id"]
-        return Post.objects.filter(location__location_id=location_id).order_by(
-            "-view_count"
-        )
+        return Post.objects.filter(location__location_id=location_id)[:8]
