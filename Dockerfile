@@ -41,6 +41,9 @@ RUN chmod 0644 /etc/cron.d/crontab && \
 
 #날씨API패키지
 RUN pip install xmltodict
+RUN apk add --no-cache tzdata && \
+    cp /usr/share/zoneinfo/Asia/Seoul /etc/localtime && \
+    echo "Asia/Seoul" > /etc/timezone
 
 ENV PATH="/py/bin:$PATH"
 
