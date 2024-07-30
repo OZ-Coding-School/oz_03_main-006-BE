@@ -18,7 +18,7 @@ def image_upload_path(instance, filename):
 class Post(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts")
     title = models.CharField(max_length=200, null=False)
-    tag = models.CharField(max_length=200, null=False)
+    tag = models.CharField(max_length=200, null=True, blank=True)
     location = models.ForeignKey(
         Location, on_delete=models.CASCADE, related_name="posts"
     )  # location 필드 추가
