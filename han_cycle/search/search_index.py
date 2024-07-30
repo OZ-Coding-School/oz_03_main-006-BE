@@ -9,6 +9,7 @@ class PostIndex(Document):
     user_id = Keyword()
     title = Text()
     content = Text()
+    thumbnail = Keyword()
 
     class Index:
         name = "posts"
