@@ -329,3 +329,83 @@ class PostsByLocationPopularView(generics.ListAPIView):
         return Post.objects.filter(location__location_id=location_id).order_by(
             "-view_count"
         )
+
+
+# 새로운 최신순 전체 게시물 뷰
+class AllPostsByLocationLatestView(generics.ListAPIView):
+    serializer_class = PostListSerializer
+
+    @swagger_auto_schema(
+        operation_description="Retrieve all posts for a specific location, ordered by latest.",
+        responses={200: PostListSerializer(many=True)},
+        manual_parameters=[
+            openapi.Parameter(
+                "location_id",
+                openapi.IN_PATH,
+                description="ID of the location to retrieve posts for",
+                type=openapi.TYPE_INTEGER,
+            )
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        """
+        Get all posts for a specific location, ordered by latest creation time.
+        """
+        return self.list(request, *args, **kwargs)
+
+    def get_queryset(self):
+        location_id = self.kwargs["location_id"]
+        return Post.objects.filter(location__location_id=location_id).order_by(
+            "-created_at"
+        )
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+# 새로운 조회수순 전체 게시물 뷰
+class AllPostsByLocationPopularView(generics.ListAPIView):
+    serializer_class = PostListSerializer
+
+    @swagger_auto_schema(
+        operation_description="Retrieve all posts for a specific location, ordered by popularity (view count).",
+        responses={200: PostListSerializer(many=True)},
+        manual_parameters=[
+            openapi.Parameter(
+                "location_id",
+                openapi.IN_PATH,
+                description="ID of the location to retrieve posts for",
+                type=openapi.TYPE_INTEGER,
+            )
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        """
+        Get all posts for a specific location, ordered by view count.
+        """
+        return self.list(request, *args, **kwargs)
+
+    def get_queryset(self):
+        location_id = self.kwargs["location_id"]
+        return Post.objects.filter(location__location_id=location_id).order_by(
+            "-view_count"
+        )
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
