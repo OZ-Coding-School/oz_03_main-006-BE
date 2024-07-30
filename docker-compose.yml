@@ -44,26 +44,6 @@ services:
     networks:
       - my_network
 
-  nginx:
-    image: nginx:latest
-    ports:
-      - "443:443"
-    volumes:
-      - certs:/etc/letsencrypt
-      - html:/var/www/html
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - /etc/letsencrypt/live/hancycle.site:/etc/letsencrypt/live/hancycle.site
-    depends_on:
-      - app
-
-  certbot:
-    image: certbot/certbot
-    volumes:
-      - certs:/etc/letsencrypt
-      - html:/var/www/html
-    entrypoint: ["certbot"] # entrypoint 변경
-    command: ["certonly", "--webroot", "-w", "/var/www/html", "--email", "yoonju977@gmail.com", "-d", "hancycle.site"] # 명령어 배열 형태로 변경
-
   db:
     image: postgres:15.7
     environment:
@@ -108,8 +88,6 @@ services:
 volumes:
   postgres_data:
   es_data:
-  certs:
-  html:
 
 networks:
   my_network:

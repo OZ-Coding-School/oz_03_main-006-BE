@@ -25,4 +25,3 @@ requests #스크래핑
 beautifulsoup4 #스크래핑
 tzdata>=2024.1
 elasticsearch>=7.10.0
-

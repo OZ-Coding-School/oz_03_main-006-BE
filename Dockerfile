@@ -1,15 +1,11 @@
 # Python 3.11이 설치된 Alpine Linux 3.19
 FROM python:3.11-alpine3.19
 
-#FROM nginx:latest
-
 # LABEL 명령어는 이미지에 메타데이터를 추가합니다.
 LABEL maintainer="han_cycle"
 
 # 환경 변수 PYTHONUNBUFFERED를 1로 설정합니다.
 ENV PYTHONUNBUFFERED=1
-
-#COPY nginx.conf /etc/nginx/nginx.conf
 
 # 로컬 파일 시스템의 requirements.txt 파일을 컨테이너의 /tmp/requirements.txt로 복사합니다.
 COPY ./requirements.txt /tmp/requirements.txt
