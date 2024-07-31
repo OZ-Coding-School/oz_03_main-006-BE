@@ -300,30 +300,46 @@ class LikeView(APIView):
         except Like.DoesNotExist:
             Like.objects.create(user_id=user_id, post=post)
             return Response({"message": "좋아요"}, status=status.HTTP_201_CREATED)
-        
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "user_id",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+                description="ID of the user",
+            )
+        ],
+        responses={
+            200: openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={"result": openapi.Schema(type=openapi.TYPE_BOOLEAN)},
+            ),
+            400: "Bad Request",
+            404: "Not Found",
+        },
+    )
     def get(self, request, pk):
         post = get_object_or_404(Post, pk=pk)
-        user_id = request.data.get("user_id")  # request.data에서 user_id 가져오기
+        user_id = request.query_params.get(
+            "user_id"
+        )  # 쿼리 파라미터에서 user_id 가져오기
 
         if not user_id:
             return Response(
                 {"error": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST
             )
-        
-    
 
         try:
             like = Like.objects.get(user_id=user_id, post=post)
             boolean_value = True
-            data = {'result': boolean_value}
+            data = {"result": boolean_value}
             return JsonResponse(data)
-            
-            
         except Like.DoesNotExist:
             boolean_value = False
-            data = {'result': boolean_value}
+            data = {"result": boolean_value}
             return JsonResponse(data)
-        
+
 
 class PostsByLocationLatestView(generics.ListAPIView):
     serializer_class = PostListSerializer
