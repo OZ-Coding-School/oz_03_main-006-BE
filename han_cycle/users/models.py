@@ -6,6 +6,7 @@ import uuid
 from .managers import CustomUserManager  # Import the custom manager
 from django.conf import settings
 import datetime
+
 class User(AbstractUser):
     email = models.EmailField(unique=True)  # Unique
     provider = models.CharField(max_length=100)  # Not null
