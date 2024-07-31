@@ -1,7 +1,6 @@
 django>=4.2.0,<4.3.0
 djangorestframework>=3.14.0,<4.0.0
 psycopg2-binary
-django-allauth # allauth social login
 requests
 cryptography
 python-dotenv #.env file
@@ -25,3 +24,4 @@ requests #스크래핑
 beautifulsoup4 #스크래핑
 tzdata>=2024.1
 elasticsearch>=7.10.0
+djangorestframework-simplejwt # JWT authentication
