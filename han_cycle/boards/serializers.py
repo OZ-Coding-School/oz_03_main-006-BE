@@ -81,17 +81,6 @@ class DetailPostSerializer(serializers.ModelSerializer):
             obj.user_id.profile_image.url if obj.user_id.profile_image else None
         )  # User 모델의 프로필 이미지 URL 가져오기
     
-    def update(self, instance, validated_data):
-        # validated_data에서 thumbnail 정보를 가져옴
-        thumbnail_file = validated_data.pop('thumbnail', None)
-        # 나머지 필드 업데이트
-        instance = super().update(instance, validated_data)
-
-        # thumbnail 정보가 있는 경우 처리
-        if thumbnail_file:
-            instance.thumbnail = thumbnail_file
-            instance.save()
-
 
 
 # 게시글 작성 시리얼라이저
