@@ -1,13 +1,11 @@
 import datetime
 import random
 import string
-from datetime import timedelta
 
 import jwt
-import requests
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect
 from django.utils.decorators import method_decorator
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -145,137 +143,6 @@ def googleredirect(request):
     return redirect(
         f"https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id={settings.GOOGLE_CLIENT_ID}&redirect_uri={settings.GOOGLE_REDIRECT_URI}&scope=openid%20email%20profile&state={state}"
     )
-
-
-class GoogleCallbackView(APIView):
-    @swagger_auto_schema(
-        responses={
-            200: "Google login successful",
-            400: "Bad Request",
-            500: "Server Error",
-        }
-    )
-    def get(self, request):
-        """
-        구글 로그인 콜백 API
-        - 구글 OAuth2를 통해 사용자 인증 후 JWT 토큰 발급
-        """
-        code = request.GET.get("code")
-        state = request.GET.get("state")
-
-        if state != request.session.pop("oauth_state", None):
-            return Response({"error": "Invalid state"}, status=400)
-
-        token_url = "https://oauth2.googleapis.com/token"
-        payload = {
-            "grant_type": "authorization_code",
-            "client_id": settings.GOOGLE_CLIENT_ID,
-            "client_secret": settings.GOOGLE_CLIENT_SECRET,
-            "redirect_uri": settings.GOOGLE_REDIRECT_URI,
-            "code": code,
-        }
-        headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        token_response = requests.post(token_url, data=payload, headers=headers)
-
-        try:
-            token_json = token_response.json()
-        except requests.exceptions.JSONDecodeError:
-            return Response({"error": "Invalid response from Google API"}, status=500)
-
-        access_token = token_json.get("access_token")
-        if not access_token:
-            return Response({"error": "Failed to get access token"}, status=400)
-
-        user_info_url = "https://www.googleapis.com/oauth2/v1/userinfo"
-        headers = {"Authorization": f"Bearer {access_token}"}
-        user_info_response = requests.get(user_info_url, headers=headers)
-
-        try:
-            user_info = user_info_response.json()
-        except requests.exceptions.JSONDecodeError:
-            return Response({"error": "Invalid response from Google API"}, status=500)
-
-        payload = {
-            "user_id": user_info["id"],
-            "exp": datetime.datetime.utcnow() + timedelta(days=1),
-            "iat": datetime.datetime.utcnow(),
-        }
-        jwt_token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
-
-        response = redirect("http://localhost:5173/auth/callback")
-        response.set_cookie(
-            "jwt_token", jwt_token, httponly=True, secure=True, samesite="Lax"
-        )
-        return response
-
-
-def kakaoredirect(request):
-    return redirect(
-        f"https://kauth.kakao.com/oauth/authorize?response_type=code&client_id={settings.KAKAO_CLIENT_ID}&redirect_uri={settings.KAKAO_REDIRECT_URI}"
-    )
-
-
-class KakaoLoginView(APIView):
-    @swagger_auto_schema(
-        responses={
-            200: "Kakao login successful",
-            400: "Bad Request",
-            500: "Server Error",
-        }
-    )
-    def get(self, request):
-        """
-        카카오 로그인 콜백 API
-        - 카카오 OAuth2를 통해 사용자 인증 후 JWT 토큰 발급
-        """
-        code = request.GET.get("code")
-        if not code:
-            return Response({"error": "No code provided"}, status=400)
-
-        token_url = "https://kauth.kakao.com/oauth/token"
-        payload = {
-            "grant_type": "authorization_code",
-            "client_id": settings.KAKAO_CLIENT_ID,
-            "client_secret": settings.KAKAO_CLIENT_SECRET,
-            "redirect_uri": settings.KAKAO_REDIRECT_URI,
-            "code": code,
-        }
-        headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        token_response = requests.post(token_url, data=payload, headers=headers)
-
-        try:
-            token_json = token_response.json()
-        except requests.exceptions.JSONDecodeError:
-            return Response({"error": "Invalid response from Kakao API"}, status=500)
-
-        access_token = token_json.get("access_token")
-        if not access_token:
-            return Response({"error": "Failed to get access token"}, status=400)
-
-        user_info_url = "https://kapi.kakao.com/v2/user/me"
-        headers = {"Authorization": f"Bearer {access_token}"}
-        user_info_response = requests.get(user_info_url, headers=headers)
-
-        try:
-            user_info = user_info_response.json()
-        except requests.exceptions.JSONDecodeError:
-            return Response({"error": "Invalid response from Kakao API"}, status=500)
-
-        payload = {
-            "user_id": user_info["id"],
-            "exp": datetime.datetime.utcnow() + timedelta(days=1),
-            "iat": datetime.datetime.utcnow(),
-        }
-        jwt_token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
-
-        response = redirect(
-            "http://localhost:5173/auth/callback"
-        )  # Replace with your frontend URL
-        response.set_cookie(
-            "jwt_token", jwt_token, httponly=True, secure=True, samesite="Lax"
-        )
-
-        return response
 
 
 class EditProfileView(APIView):
