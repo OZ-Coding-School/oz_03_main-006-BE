@@ -1,23 +1,36 @@
 from django.urls import path
 
 from .views import (
+    DeleteAccountView,
     LoginView,
     LogoutView,
+    NicknameView,
+    PasswordResetConfirmView,
+    PasswordResetRequestView,
     RegisterView,
     UserView,
-    NicknameView,
-    DeleteAccountView,
-    PasswordResetRequestView,
-    PasswordResetConfirmView
 )
 
+# URL 패턴 정의
 urlpatterns = [
-    path("accounts/register", RegisterView.as_view(), name="register"),
-    path("accounts/login", LoginView.as_view(), name="login"),
-    path("accounts/user", UserView.as_view(), name="user"),  # get token by cookie
-    path("accounts/logout", LogoutView.as_view(), name="logout"),
-    path("accounts/nickname", NicknameView.as_view(), name="nickname"),
-    path('accounts/delete', DeleteAccountView.as_view(), name='delete-account'),
-    path('accounts/password-reset/', PasswordResetRequestView.as_view(), name='password-reset-request'),
-    path('accounts/password-reset/confirm', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
+    path("accounts/register", RegisterView.as_view(), name="register"),  # 사용자 등록
+    path("accounts/login", LoginView.as_view(), name="login"),  # 로그인
+    path(
+        "accounts/user", UserView.as_view(), name="user"
+    ),  # 사용자 정보 조회 (쿠키로 JWT 토큰 인증)
+    path("accounts/logout", LogoutView.as_view(), name="logout"),  # 로그아웃
+    path("accounts/nickname", NicknameView.as_view(), name="nickname"),  # 닉네임 변경
+    path(
+        "accounts/delete", DeleteAccountView.as_view(), name="delete-account"
+    ),  # 계정 삭제 (회원 탈퇴)
+    path(
+        "accounts/password-reset/",
+        PasswordResetRequestView.as_view(),
+        name="password-reset-request",
+    ),  # 비밀번호 재설정 요청
+    path(
+        "accounts/password-reset/confirm",
+        PasswordResetConfirmView.as_view(),
+        name="password-reset-confirm",
+    ),  # 비밀번호 재설정 확인
 ]
