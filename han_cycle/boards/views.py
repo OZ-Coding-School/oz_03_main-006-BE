@@ -300,7 +300,30 @@ class LikeView(APIView):
         except Like.DoesNotExist:
             Like.objects.create(user_id=user_id, post=post)
             return Response({"message": "좋아요"}, status=status.HTTP_201_CREATED)
+        
+    def get(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        user_id = request.data.get("user_id")  # request.data에서 user_id 가져오기
 
+        if not user_id:
+            return Response(
+                {"error": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        
+    
+
+        try:
+            like = Like.objects.get(user_id=user_id, post=post)
+            boolean_value = True
+            data = {'result': boolean_value}
+            return JsonResponse(data)
+            
+            
+        except Like.DoesNotExist:
+            boolean_value = False
+            data = {'result': boolean_value}
+            return JsonResponse(data)
+        
 
 class PostsByLocationLatestView(generics.ListAPIView):
     serializer_class = PostListSerializer
