@@ -139,7 +139,7 @@ class PostDetailView(APIView):
         post = get_object_or_404(Post, pk=pk)
 
         # 요청 데이터를 사용하여 게시물을 직렬화합니다.
-        serializer = PostSerializer(post, data=request.data)
+        serializer = PostSerializer(post, data=request.data, partial=True)
 
         # 직렬화된 데이터가 유효한 경우
         if serializer.is_valid():
