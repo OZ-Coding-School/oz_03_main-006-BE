@@ -36,13 +36,11 @@ SECRET_KEY = os.getenv("SECRET_KEY", "default_secret_key")
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "43.203.170.167",
     "localhost",
     "127.0.0.1",
     "52.79.207.68",
-    "43.202.53.249",
-    "13.125.183.76",
     "0.0.0.0",
+    "43.201.142.187",
 ]
 
 # 프론트 테스트용
@@ -197,7 +195,6 @@ AUTHENTICATION_BACKENDS = [
     # Needed to login by username in Django admin, regardless of `allauth`
     "django.contrib.auth.backends.ModelBackend",
 ]
-
 
 
 # backend check the login for test
