@@ -339,8 +339,22 @@ class LikeView(APIView):
             boolean_value = False
             data = {"result": boolean_value}
             return JsonResponse(data)
-        
-@api_view(['GET'])
+
+
+@swagger_auto_schema(
+    method="get",
+    operation_description="Get posts liked by a specific user",
+    responses={200: PostListSerializer(many=True)},
+    manual_parameters=[
+        openapi.Parameter(
+            "user_id",
+            openapi.IN_PATH,
+            description="ID of the user to retrieve liked posts for",
+            type=openapi.TYPE_INTEGER,
+        )
+    ],
+)
+@api_view(["GET"])
 def liked_posts(request, user_id):
     user = get_object_or_404(User, pk=user_id)
 
@@ -348,7 +362,7 @@ def liked_posts(request, user_id):
     user_likes = Like.objects.filter(user=user)
 
     # Like 객체에서 Post 객체들의 ID를 가져옴
-    liked_post_ids = user_likes.values_list('post_id', flat=True)
+    liked_post_ids = user_likes.values_list("post_id", flat=True)
 
     # 해당 ID들을 사용하여 게시물 가져오기
     liked_posts = Post.objects.filter(id__in=liked_post_ids)
