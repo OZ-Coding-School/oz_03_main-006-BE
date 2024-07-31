@@ -13,6 +13,7 @@ from .views import (
     posts,
     AllPostsByLocationLatestView,  
     AllPostsByLocationPopularView,
+    liked_posts,
 )
 
 # 새 뷰 추가
@@ -28,6 +29,7 @@ urlpatterns = [
     path("upload_image/", UploadImageView.as_view(), name="upload_image"),
     path("<int:pk>/like/", LikeView.as_view(), name="click_like"),
     path("user/<int:user_id>/", GetUserPost, name="get_user_post"),
+    path('user/<int:user_id>/liked_posts/', liked_posts, name='liked_posts'),
     path(
         "<int:location_id>/latest/",
         PostsByLocationLatestView.as_view(),

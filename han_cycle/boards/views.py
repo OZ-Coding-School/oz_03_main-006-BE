@@ -15,7 +15,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Comment, Image, Like, Post
+from .models import Comment, Image, Like, Post, User
 from .pagination import CustomPagination
 from .serializers import (
     CommentSerializer,
@@ -339,6 +339,23 @@ class LikeView(APIView):
             boolean_value = False
             data = {"result": boolean_value}
             return JsonResponse(data)
+        
+@api_view(['GET'])
+def liked_posts(request, user_id):
+    user = get_object_or_404(User, pk=user_id)
+
+    # 해당 사용자가 좋아요한 모든 Like 객체를 가져옴
+    user_likes = Like.objects.filter(user=user)
+
+    # Like 객체에서 Post 객체들의 ID를 가져옴
+    liked_post_ids = user_likes.values_list('post_id', flat=True)
+
+    # 해당 ID들을 사용하여 게시물(Post)들을 가져옵니다.
+    liked_posts = Post.objects.filter(id__in=liked_post_ids)
+
+    # 게시물을 시리얼라이즈하여 JSON 응답으로 반환합니다.
+    serializer = PostListSerializer(liked_posts, many=True)
+    return Response(serializer.data)
 
 
 class PostsByLocationLatestView(generics.ListAPIView):
