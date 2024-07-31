@@ -6,9 +6,12 @@ from django.shortcuts import get_list_or_404, get_object_or_404
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view
+
+# from rest_framework.decorators import permissions_classes
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated
+
+# from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -260,18 +263,36 @@ class UploadImageView(APIView):
 
 
 class LikeView(APIView):
-    #permission_classes = [IsAuthenticated]
-
+    # permission_classes = [IsAuthenticated]
     @swagger_auto_schema(
-        responses={201: "좋아요", 204: "좋아요 취소", 404: "Not Found"}
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "user_id": openapi.Schema(
+                    type=openapi.TYPE_INTEGER, description="ID of the user"
+                )
+            },
+            required=["user_id"],
+        ),
+        responses={
+            201: "좋아요",
+            204: "좋아요 취소",
+            404: "Not Found",
+            400: "Bad Request",
+        },
     )
     def post(self, request, pk):
         post = get_object_or_404(Post, pk=pk)
-        #user = request.user
+        # user = request.user
         user_id = request.data.get("user_id")  # request.data에서 user_id 가져오기
-        try:
 
-            like = Like.objects.get(user=user_id, post=post)
+        if not user_id:
+            return Response(
+                {"error": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            like = Like.objects.get(user_id=user_id, post=post)
             like.delete()
             return Response(
                 {"message": "좋아요 취소"}, status=status.HTTP_204_NO_CONTENT
