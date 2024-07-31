@@ -4,11 +4,11 @@ from .views import (
     DeleteAccountView,
     LoginView,
     LogoutView,
-    NicknameView,
     PasswordResetConfirmView,
     PasswordResetRequestView,
     RegisterView,
     UserView,
+    NicknameAndProfileImageView,
 )
 
 # URL 패턴 정의
@@ -19,7 +19,6 @@ urlpatterns = [
         "accounts/user", UserView.as_view(), name="user"
     ),  # 사용자 정보 조회 (쿠키로 JWT 토큰 인증)
     path("accounts/logout", LogoutView.as_view(), name="logout"),  # 로그아웃
-    path("accounts/nickname", NicknameView.as_view(), name="nickname"),  # 닉네임 변경
     path(
         "accounts/delete", DeleteAccountView.as_view(), name="delete-account"
     ),  # 계정 삭제 (회원 탈퇴)
@@ -33,4 +32,9 @@ urlpatterns = [
         PasswordResetConfirmView.as_view(),
         name="password-reset-confirm",
     ),  # 비밀번호 재설정 확인
+    path(
+        "accounts/edit",
+        NicknameAndProfileImageView.as_view(),
+        name="edit"
+    ), #nickname and profile image change
 ]
