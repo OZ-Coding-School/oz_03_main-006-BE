@@ -350,10 +350,9 @@ def liked_posts(request, user_id):
     # Like 객체에서 Post 객체들의 ID를 가져옴
     liked_post_ids = user_likes.values_list('post_id', flat=True)
 
-    # 해당 ID들을 사용하여 게시물(Post)들을 가져옵니다.
+    # 해당 ID들을 사용하여 게시물 가져오기
     liked_posts = Post.objects.filter(id__in=liked_post_ids)
 
-    # 게시물을 시리얼라이즈하여 JSON 응답으로 반환합니다.
     serializer = PostListSerializer(liked_posts, many=True)
     return Response(serializer.data)
 
