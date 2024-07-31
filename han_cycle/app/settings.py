@@ -156,16 +156,6 @@ DATABASES = {
     }
 }
 
-# Google
-GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
-GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
-
-# Kakao
-KAKAO_CLIENT_ID = os.getenv("KAKAO_CLIENT_ID")
-KAKAO_CLIENT_SECRET = os.getenv("KAKAO_CLIENT_SECRET")
-KAKAO_REDIRECT_URI = os.getenv("KAKAO_REDIRECT_URI")
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -206,27 +196,9 @@ STATIC_URL = "static/"
 AUTHENTICATION_BACKENDS = [
     # Needed to login by username in Django admin, regardless of `allauth`
     "django.contrib.auth.backends.ModelBackend",
-    "social_core.backends.kakao.KakaoOAuth2",
 ]
 
-SOCIALACCOUNT_PROVIDERS = {
-    "google": {
-        "SCOPE": [
-            "profile",
-            "email",
-        ],
-        "AUTH_PARAMS": {
-            "access_type": "online",
-        },
-    },
-    "kakao": {
-        "SCOPE": [
-            "profile_nickname",
-            "profile_image",
-            "account_email",
-        ]
-    },
-}
+
 
 # backend check the login for test
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
