@@ -20,6 +20,7 @@ from django.urls import include, path
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
+from .views import health_check
 
 # swagger세팅
 schema_view = get_schema_view(
@@ -46,4 +47,5 @@ urlpatterns = [
         name="schema-swagger-ui",
     ),
     path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
+    path('home/health/', health_check, name='health_check'),
 ]

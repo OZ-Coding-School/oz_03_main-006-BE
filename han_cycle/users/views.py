@@ -357,7 +357,6 @@ class PasswordResetConfirmView(APIView):
         )
 
 
-
 class NicknameAndProfileImageView(APIView):
     @swagger_auto_schema(
         operation_description="닉네임 및 프로필 이미지 변경 API - JWT 토큰을 통해 인증된 사용자만 사용 가능. 요청 데이터에서 새로운 닉네임과 프로필 이미지를 받아 업데이트합니다.",
@@ -371,7 +370,7 @@ class NicknameAndProfileImageView(APIView):
                     type=openapi.TYPE_STRING, description="새로운 프로필 이미지 URL"
                 ),
             },
-            required=["nickname", "profile_image"],
+            required=["nickname"],
         ),
         responses={
             200: openapi.Response(
@@ -388,11 +387,6 @@ class NicknameAndProfileImageView(APIView):
         },
     )
     def put(self, request):
-        """
-        닉네임 및 프로필 이미지 변경 API
-        - JWT 토큰을 통해 인증된 사용자만 사용 가능
-        - 요청 데이터에서 새로운 닉네임과 프로필 이미지 받아 업데이트
-        """
         token = request.COOKIES.get("jwt")
         if not token:
             return Response(
@@ -425,12 +419,6 @@ class NicknameAndProfileImageView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if not new_profile_image:
-            return Response(
-                {"detail": "New profile image is required."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
         if User.objects.filter(nickname=new_nickname).exists():
             return Response(
                 {"detail": "Nickname already exists."},
@@ -438,7 +426,10 @@ class NicknameAndProfileImageView(APIView):
             )
 
         user.nickname = new_nickname
-        user.profile_image = new_profile_image
+
+        if new_profile_image:
+            user.profile_image = new_profile_image
+
         user.save()
 
         return Response(

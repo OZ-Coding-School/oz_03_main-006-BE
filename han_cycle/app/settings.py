@@ -47,6 +47,7 @@ ALLOWED_HOSTS = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "https://hancycle.site",
+    "http://43.201.142.187",
 ]
 
 # front-end ports to access our app
