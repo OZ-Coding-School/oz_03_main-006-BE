@@ -155,80 +155,6 @@ class LogoutView(APIView):
         return response
 
 
-class NicknameView(APIView):
-    @swagger_auto_schema(
-        operation_description="닉네임 변경 API - JWT 토큰을 통해 인증된 사용자만 사용 가능. 요청 데이터에서 새로운 닉네임을 받아 사용자 닉네임을 업데이트합니다.",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                "nickname": openapi.Schema(
-                    type=openapi.TYPE_STRING, description="새로운 닉네임"
-                ),
-            },
-            required=["nickname"],
-        ),
-        responses={
-            200: openapi.Response(
-                description="닉네임이 성공적으로 업데이트되었습니다.",
-                examples={
-                    "application/json": {"detail": "Nickname updated to new_nickname."}
-                },
-            ),
-            400: "Bad Request",
-            401: "Unauthorized",
-            404: "Not Found",
-        },
-    )
-    def put(self, request):
-        """
-        닉네임 변경 API
-        - JWT 토큰을 통해 인증된 사용자만 사용 가능
-        - 요청 데이터에서 새로운 닉네임을 받아 사용자 닉네임 업데이트
-        """
-        token = request.COOKIES.get("jwt")
-        if not token:
-            return Response(
-                {"detail": "Authentication credentials were not provided."},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-
-        try:
-            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            user = User.objects.get(id=payload["id"])
-        except jwt.ExpiredSignatureError:
-            return Response(
-                {"detail": "Token has expired."}, status=status.HTTP_401_UNAUTHORIZED
-            )
-        except jwt.InvalidTokenError:
-            return Response(
-                {"detail": "Invalid token."}, status=status.HTTP_401_UNAUTHORIZED
-            )
-        except User.DoesNotExist:
-            return Response(
-                {"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND
-            )
-
-        new_nickname = request.data.get("nickname")
-        if not new_nickname:
-            return Response(
-                {"detail": "New nickname is required."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        if User.objects.filter(nickname=new_nickname).exists():
-            return Response(
-                {"detail": "Nickname already exists."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        user.nickname = new_nickname
-        user.save()
-
-        return Response(
-            {f"Nickname updated to {user.nickname}."}, status=status.HTTP_200_OK
-        )
-
-
 class RefreshTokenView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -427,5 +353,95 @@ class PasswordResetConfirmView(APIView):
 
         return Response(
             {"detail": "Password has been reset successfully."},
+            status=status.HTTP_200_OK,
+        )
+
+
+
+class NicknameAndProfileImageView(APIView):
+    @swagger_auto_schema(
+        operation_description="닉네임 및 프로필 이미지 변경 API - JWT 토큰을 통해 인증된 사용자만 사용 가능. 요청 데이터에서 새로운 닉네임과 프로필 이미지를 받아 업데이트합니다.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "nickname": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="새로운 닉네임"
+                ),
+                "profile_image": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="새로운 프로필 이미지 URL"
+                ),
+            },
+            required=["nickname", "profile_image"],
+        ),
+        responses={
+            200: openapi.Response(
+                description="닉네임 및 프로필 이미지가 성공적으로 업데이트되었습니다.",
+                examples={
+                    "application/json": {
+                        "detail": "Nickname and profile image updated successfully."
+                    }
+                },
+            ),
+            400: "Bad Request",
+            401: "Unauthorized",
+            404: "Not Found",
+        },
+    )
+    def put(self, request):
+        """
+        닉네임 및 프로필 이미지 변경 API
+        - JWT 토큰을 통해 인증된 사용자만 사용 가능
+        - 요청 데이터에서 새로운 닉네임과 프로필 이미지 받아 업데이트
+        """
+        token = request.COOKIES.get("jwt")
+        if not token:
+            return Response(
+                {"detail": "Authentication credentials were not provided."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+            user = User.objects.get(id=payload["id"])
+        except jwt.ExpiredSignatureError:
+            return Response(
+                {"detail": "Token has expired."}, status=status.HTTP_401_UNAUTHORIZED
+            )
+        except jwt.InvalidTokenError:
+            return Response(
+                {"detail": "Invalid token."}, status=status.HTTP_401_UNAUTHORIZED
+            )
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        new_nickname = request.data.get("nickname")
+        new_profile_image = request.data.get("profile_image")
+
+        if not new_nickname:
+            return Response(
+                {"detail": "New nickname is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not new_profile_image:
+            return Response(
+                {"detail": "New profile image is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if User.objects.filter(nickname=new_nickname).exists():
+            return Response(
+                {"detail": "Nickname already exists."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user.nickname = new_nickname
+        user.profile_image = new_profile_image
+        user.save()
+
+        return Response(
+            {"detail": "Nickname and profile image updated successfully."},
             status=status.HTTP_200_OK,
         )
