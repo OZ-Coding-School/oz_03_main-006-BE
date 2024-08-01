@@ -102,12 +102,12 @@ class PostDetailView(APIView):
 
         # 세션 키를 사용하여 조회수를 증가시킵니다.
         ip_address = request.META.get("REMOTE_ADDR")
-        session= request.session.get(f"anonymous_{ip_address}_post_{pk}")
+        session= request.COOKIES.get(f"anonymous_{ip_address}_post_{pk}")
         if session:
             pass
         else:
             Post.objects.filter(pk=pk).update(view_count=F("view_count") + 1)
-            request.session[f"anonymous_{ip_address}_post_{pk}"] = True
+            request.set_cookie(f"anonymous_{ip_address}_post_{pk}",True,max_age=36000)
             
 
         # 응답 데이터를 구성합니다.
