@@ -99,21 +99,22 @@ class PostDetailView(APIView):
 
         # 이미지를 직렬화합니다.
         image_data = ImageSerializer(images, many=True).data
-
-        # 세션 키를 사용하여 조회수를 증가시킵니다.
-        session_key = f"post_{pk}"
-        # 세션 키를 확인하여 조회수를 한 번만 증가시킵니다.
-        if not request.session.get(session_key, False):
-            Post.objects.filter(pk=pk).update(view_count=F("view_count") + 1)
-            request.session[session_key] = True
-
         # 응답 데이터를 구성합니다.
         response_data = {
             "post": post_data,
             "images": image_data,
         }
-        # JSON 형식으로 응답합니다.
-        return JsonResponse(response_data)
+        session=request.COOKIES.get(f"post_{pk}")
+        # 세션 키를 확인하여 조회수를 한 번만 증가시킵니다.
+        if session=="False":
+            Post.objects.filter(pk=pk).update(view_count=F("view_count") + 1)
+            response=JsonResponse(response_data)
+            response.set_cookie(key=f"post_{pk}", value="True", httponly=True)
+            return response
+
+        else:
+            # JSON 형식으로 응답합니다.
+            return JsonResponse(response_data)
 
     @swagger_auto_schema(responses={204: "No Content"})
     def delete(self, request, pk):
