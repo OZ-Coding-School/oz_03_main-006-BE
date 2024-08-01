@@ -99,12 +99,16 @@ class PostDetailView(APIView):
 
         # 이미지를 직렬화합니다.
         image_data = ImageSerializer(images, many=True).data
+
+        session=request.COOKIES.get(f"post_{pk}")
+
         # 응답 데이터를 구성합니다.
         response_data = {
+            "session" : session,
             "post": post_data,
             "images": image_data,
         }
-        session=request.COOKIES.get(f"post_{pk}")
+        
         # 세션 키를 확인하여 조회수를 한 번만 증가시킵니다.
         if not session:
             Post.objects.filter(pk=pk).update(view_count=F("view_count") + 1)
