@@ -104,23 +104,22 @@ class PostDetailView(APIView):
 
         # 응답 데이터를 구성합니다.
         response_data = {
-            "session" : session,
+            f"post_{pk}" : session,
             "post": post_data,
             "images": image_data,
         }
         
-        if session=="True":
-            # JSON 형식으로 응답합니다.
-            return JsonResponse(response_data)
-
+        
         # 세션 키를 확인하여 조회수를 한 번만 증가시킵니다.
-        elif not session:
+        if not session:
             Post.objects.filter(pk=pk).update(view_count=F("view_count") + 1)
             response=JsonResponse(response_data)
-            response.set_cookie(key=f"post_{pk}", value="True", httponly=True)
+            response.set_cookie(key=f"post_{pk}", value="True", httponly=True, path=f'/post-detail/{pk}')
             return response
 
-            
+        else:
+            # JSON 형식으로 응답합니다.
+            return JsonResponse(response_data)
 
     @swagger_auto_schema(responses={204: "No Content"})
     def delete(self, request, pk):
