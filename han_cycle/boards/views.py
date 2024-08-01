@@ -26,7 +26,7 @@ from .serializers import (
     PostSerializer,
 )
 
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 # 게시물 작성(post), 전체 게시물 리스트 조회(get)
 @api_view(["GET", "POST"])
 def posts(request):
@@ -102,13 +102,17 @@ class PostDetailView(APIView):
 
         # 세션 키를 사용하여 조회수를 증가시킵니다.
         ip_address = request.META.get("REMOTE_ADDR")
-        session= request.COOKIES.get(f"anonymous_{ip_address}_post_{pk}")
-        if session:
-            pass
-        else:
-            response = HttpResponse("쿠키를 설정했습니다.")
+        session = request.COOKIES.get(f"anonymous_{ip_address}_post_{pk}")
+        
+        if not session:  # 세션 쿠키가 없을 경우
             Post.objects.filter(pk=pk).update(view_count=F("view_count") + 1)
-            response.set_cookie(f"anonymous_{ip_address}_post_{pk}",True,max_age=36000)
+            response = JsonResponse({
+                "message": "조회수가 증가되었습니다.",
+                "post": DetailPostSerializer(post).data,
+                "images": ImageSerializer(images, many=True).data,
+            })
+            response.set_cookie(f"anonymous_{ip_address}_post_{pk}", True, max_age=36000)
+            return response
             
 
         # 응답 데이터를 구성합니다.
