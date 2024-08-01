@@ -109,7 +109,7 @@ class PostDetailView(APIView):
         if not session:
             Post.objects.filter(pk=pk).update(view_count=F("view_count") + 1)
             response=JsonResponse(response_data)
-            response.set_cookie(key=f"post_{pk}", value="True", httponly=True, path=f'/post-detail/{pk}')
+            response.set_cookie(key=f"post_{pk}", value="True", httponly=True)
             return response
 
         else:
