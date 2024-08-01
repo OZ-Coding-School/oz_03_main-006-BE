@@ -41,7 +41,8 @@ ALLOWED_HOSTS = [
     "52.79.207.68",
     "0.0.0.0",
     "43.201.142.187",
-    "hancycle-ELB-1331249209.ap-northeast-2.elb.amazonaws.com"
+    "hancycle-ELB-1331249209.ap-northeast-2.elb.amazonaws.com",
+    "hancycle.site",
 ]
 
 # 프론트 테스트용
