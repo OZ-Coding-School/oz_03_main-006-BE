@@ -41,7 +41,7 @@ ALLOWED_HOSTS = [
     "0.0.0.0",
     "43.201.142.187",
     "hancycle-ELB-1331249209.ap-northeast-2.elb.amazonaws.com",
-    "hancycle.site",
+    "api.hancycle.site",
     "172.31.0.5",
 ]
 
@@ -53,6 +53,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "https://hancycle.site",
     "http://43.201.142.187",
+    "http://172.31.0.5",
+    "https://api.hancycle.site",
 ]
 
 CORS_ALLOW_CREDENTIALS = True  # if it's false, front-end can't get cookie
