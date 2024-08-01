@@ -17,6 +17,7 @@ from rest_framework.views import APIView
 
 from .models import RefreshToken, User
 from .serializers import UserSerializer, PasswordResetConfirmSerializer
+from django.http import HttpResponse
 
 User = get_user_model()
 

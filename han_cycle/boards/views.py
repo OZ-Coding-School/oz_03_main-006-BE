@@ -26,7 +26,7 @@ from .serializers import (
     PostSerializer,
 )
 
-
+from django.http import HttpResponse
 # 게시물 작성(post), 전체 게시물 리스트 조회(get)
 @api_view(["GET", "POST"])
 def posts(request):
@@ -106,8 +106,9 @@ class PostDetailView(APIView):
         if session:
             pass
         else:
+            response = HttpResponse("쿠키를 설정했습니다.")
             Post.objects.filter(pk=pk).update(view_count=F("view_count") + 1)
-            request.set_cookie(f"anonymous_{ip_address}_post_{pk}",True,max_age=36000)
+            response.set_cookie(f"anonymous_{ip_address}_post_{pk}",True,max_age=36000)
             
 
         # 응답 데이터를 구성합니다.
