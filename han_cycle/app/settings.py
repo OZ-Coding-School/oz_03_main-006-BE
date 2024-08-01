@@ -56,6 +56,8 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True  # if it's false, front-end can't get cookie
 
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 
 # Retry configuration: 5 retries with exponential backoff (max wait 10 seconds)
 @retry(
