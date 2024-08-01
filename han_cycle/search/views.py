@@ -90,6 +90,7 @@ class SearchView(APIView):
                         "created_at": hit.created_at,
                         "id": hit.meta.id,
                         "user_id": user_id,
+                        "thumbnail": hit.thumbnail,
                     }
                     for hit in user_post_response
                 ]
