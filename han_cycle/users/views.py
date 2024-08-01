@@ -16,7 +16,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import RefreshToken, User
-from .serializers import UserSerializer
+from .serializers import UserSerializer, PasswordResetConfirmSerializer
 
 User = get_user_model()
 
@@ -304,50 +304,50 @@ class PasswordResetRequestView(APIView):
 
 class PasswordResetConfirmView(APIView):
     @swagger_auto_schema(
-        operation_description="비밀번호 재설정 API - 재설정 링크를 통해 받은 토큰과 새로운 비밀번호로 사용자 비밀번호를 업데이트",
+        operation_description="비밀번호 재설정 API - 새로운 비밀번호로 사용자 비밀번호를 업데이트",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                "token": openapi.Schema(
-                    type=openapi.TYPE_STRING, description="비밀번호 재설정 토큰"
-                ),
                 "new_password": openapi.Schema(
                     type=openapi.TYPE_STRING, description="새로운 비밀번호"
                 ),
             },
-            required=["token", "new_password"],
+            required=["new_password"],
         ),
         responses={
             200: "Password has been reset successfully.",
             400: "Bad Request",
+            401: "Unauthorized",
         },
     )
     def post(self, request):
-        serializer = PasswordResetConfirmSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        token = serializer.validated_data["token"]
-        new_password = serializer.validated_data["new_password"]
+        token = request.COOKIES.get("jwt")
+        if not token:
+            return Response(
+                {"detail": "Authentication credentials were not provided."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+            user = User.objects.get(id=payload["id"])
         except jwt.ExpiredSignatureError:
             return Response(
-                {"detail": "Token has expired."}, status=status.HTTP_400_BAD_REQUEST
+                {"detail": "Token has expired."}, status=status.HTTP_401_UNAUTHORIZED
             )
         except jwt.InvalidTokenError:
             return Response(
-                {"detail": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST
+                {"detail": "Invalid token."}, status=status.HTTP_401_UNAUTHORIZED
             )
-
-        user_id = payload.get("id")
-        try:
-            user = User.objects.get(id=user_id)
         except User.DoesNotExist:
             return Response(
-                {"detail": "User does not exist."}, status=status.HTTP_400_BAD_REQUEST
+                {"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND
             )
 
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        new_password = serializer.validated_data["new_password"]
         user.set_password(new_password)
         user.save()
 
@@ -355,6 +355,8 @@ class PasswordResetConfirmView(APIView):
             {"detail": "Password has been reset successfully."},
             status=status.HTTP_200_OK,
         )
+
+
 
 
 class NicknameAndProfileImageView(APIView):
