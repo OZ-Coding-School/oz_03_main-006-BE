@@ -1,23 +1,20 @@
 import datetime
-
+from rest_framework.permissions import BasePermission
 import jwt
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
-from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import serializers, status
+from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import  IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from .models import RefreshToken, User
 from .serializers import UserSerializer, PasswordResetConfirmSerializer
-from django.http import HttpResponse
 
 User = get_user_model()
 
@@ -202,55 +199,88 @@ class RefreshTokenView(APIView):
         return Response({"access_token": new_access_token}, status=200)
 
 
+
+
+
+class CookieAuthentication(BasePermission):
+    def has_permission(self, request, view):
+        # 쿠키에서 JWT 토큰을 가져옵니다.
+        token = request.COOKIES.get('jwt')
+        if not token:
+            return False
+        
+        # 토큰 검증
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+            request.user = User.objects.get(id=payload['id'])
+            return True
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed(_('Token has expired.'))
+        except jwt.InvalidTokenError:
+            raise AuthenticationFailed(_('Invalid token.'))
+        except User.DoesNotExist:
+            raise AuthenticationFailed(_('User not found.'))
+
+        return False
+
+
+
+
+
+
 class DeleteAccountView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CookieAuthentication]
 
     @swagger_auto_schema(
         operation_description="회원 탈퇴 API - JWT 토큰을 통해 인증된 사용자의 계정을 삭제합니다.",
         responses={
-            204: "Account successfully deleted.",
-            401: "Unauthorized",
-            404: "Not Found",
+            204: "계정이 성공적으로 삭제되었습니다.",
+            401: "인증되지 않았습니다.",
+            404: "사용자를 찾을 수 없습니다.",
         },
     )
     def delete(self, request):
         """
         회원 탈퇴 API
         - JWT 토큰을 통해 인증된 사용자만 사용 가능
-        - 인증된 사용자의 계정을 삭제함
+        - 인증된 사용자의 계정을 삭제합니다.
         """
-        token = request.COOKIES.get("jwt")
-        if not token:
+        token = request.headers.get("Authorization")
+        if token and token.startswith("Bearer "):
+            token = token[len("Bearer "):]
+        else:
             return Response(
-                {"detail": "Authentication credentials were not provided."},
+                {"detail": "인증 자격 증명이 제공되지 않았습니다."},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
-
+        
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
             user = User.objects.get(id=payload["id"])
         except jwt.ExpiredSignatureError:
             return Response(
-                {"detail": "Token has expired."}, status=status.HTTP_401_UNAUTHORIZED
+                {"detail": "토큰이 만료되었습니다."}, status=status.HTTP_401_UNAUTHORIZED
             )
         except jwt.InvalidTokenError:
             return Response(
-                {"detail": "Invalid token."}, status=status.HTTP_401_UNAUTHORIZED
+                {"detail": "유효하지 않은 토큰입니다."}, status=status.HTTP_401_UNAUTHORIZED
             )
         except User.DoesNotExist:
             return Response(
-                {"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND
+                {"detail": "사용자를 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND
             )
 
         user.delete()
 
         response = Response(
-            {"detail": "Account successfully deleted."},
+            {"detail": "계정이 성공적으로 삭제되었습니다."},
             status=status.HTTP_204_NO_CONTENT,
         )
         response.delete_cookie("jwt")
 
         return response
+
+
 
 
 class PasswordResetRequestView(APIView):
