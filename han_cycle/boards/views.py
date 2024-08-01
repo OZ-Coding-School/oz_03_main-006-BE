@@ -8,6 +8,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, status
 from rest_framework.decorators import api_view
 
+
 # from rest_framework.decorators import permissions_classes
 from rest_framework.pagination import PageNumberPagination
 
@@ -100,16 +101,14 @@ class PostDetailView(APIView):
         image_data = ImageSerializer(images, many=True).data
 
         # 세션 키를 사용하여 조회수를 증가시킵니다.
-        if request.user.is_authenticated:
-            session_key = f"user_{request.user.id}_post_{pk}"
+        ip_address = request.META.get("REMOTE_ADDR")
+        session= request.session.get(f"anonymous_{ip_address}_post_{pk}")
+        if session:
+            pass
         else:
-            ip_address = request.META.get("REMOTE_ADDR")
-            session_key = f"anonymous_{ip_address}_post_{pk}"
-
-        # 세션 키를 확인하여 조회수를 한 번만 증가시킵니다.
-        if not request.session.get(session_key, False):
             Post.objects.filter(pk=pk).update(view_count=F("view_count") + 1)
-            request.session[session_key] = True
+            request.session[f"anonymous_{ip_address}_post_{pk}"] = True
+            
 
         # 응답 데이터를 구성합니다.
         response_data = {
