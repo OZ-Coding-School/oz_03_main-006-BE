@@ -38,12 +38,15 @@ DEBUG = True
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
-    "52.79.207.68",
     "0.0.0.0",
     "43.201.142.187",
     "hancycle-ELB-1331249209.ap-northeast-2.elb.amazonaws.com",
     "hancycle.site",
+    "172.31.0.5",
 ]
+
+# front-end ports to access our app
+CORS_ORIGIN_ALLOW_ALL = True
 
 # 프론트 테스트용
 CORS_ALLOWED_ORIGINS = [
@@ -52,8 +55,6 @@ CORS_ALLOWED_ORIGINS = [
     "http://43.201.142.187",
 ]
 
-# front-end ports to access our app
-CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True  # if it's false, front-end can't get cookie
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
