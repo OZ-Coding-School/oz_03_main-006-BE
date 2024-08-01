@@ -26,7 +26,7 @@ from .serializers import (
     PostSerializer,
 )
 
-from django.http import HttpResponse, JsonResponse
+
 # 게시물 작성(post), 전체 게시물 리스트 조회(get)
 @api_view(["GET", "POST"])
 def posts(request):
@@ -101,26 +101,19 @@ class PostDetailView(APIView):
         image_data = ImageSerializer(images, many=True).data
 
         # 세션 키를 사용하여 조회수를 증가시킵니다.
-        session = request.COOKIES.get(f"post_{pk}")
-        
-        if not session:  # 세션 쿠키가 없을 경우
+        session_key = f"post_{pk}"
+        # 세션 키를 확인하여 조회수를 한 번만 증가시킵니다.
+        if not request.session.get(session_key, False):
             Post.objects.filter(pk=pk).update(view_count=F("view_count") + 1)
-            response = JsonResponse({
-                "message": "조회수가 증가되었습니다.",
-                "post": DetailPostSerializer(post).data,
-                "images": ImageSerializer(images, many=True).data,
-            })
-            response.set_cookie(f"post_{pk}", "True", max_age=36000)
-            return response
-            
-        else :
-            # 응답 데이터를 구성합니다.
-            response_data = {
-                "post": post_data,
-                "images": image_data,
-            }
-            # JSON 형식으로 응답합니다.
-            return JsonResponse(response_data)
+            request.session[session_key] = True
+
+        # 응답 데이터를 구성합니다.
+        response_data = {
+            "post": post_data,
+            "images": image_data,
+        }
+        # JSON 형식으로 응답합니다.
+        return JsonResponse(response_data)
 
     @swagger_auto_schema(responses={204: "No Content"})
     def delete(self, request, pk):
