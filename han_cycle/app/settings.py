@@ -211,8 +211,8 @@ EMAIL_HOST = 'smtp.gmail.com'  # Gmail SMTP 서버 주소
 EMAIL_PORT = 587  # Gmail SMTP 포트
 EMAIL_USE_TLS = True  # TLS 사용 여부
 EMAIL_USE_SSL = False  # SSL 사용 여부
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')  # 이메일 서버 로그인용 이메일 주소
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')  # 이메일 서버 로그인용 비밀번호
+EMAIL_HOST_USER = 'hancycle585@gmail.com'   # 이메일 서버 로그인용 이메일 주소
+EMAIL_HOST_PASSWORD = 'awvt ujct gvsu ahlm'  # 이메일 서버 로그인용 비밀번호
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER  # 이메일 발신자 주소
 
 # make email is required for login

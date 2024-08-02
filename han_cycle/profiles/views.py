@@ -1,7 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
-from .serializers import UserUpdateSerializer
 from users.models import User  # Assuming the User model is in the users app
 import jwt
 from django.conf import settings
