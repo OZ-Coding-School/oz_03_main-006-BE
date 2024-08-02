@@ -59,8 +59,11 @@ class UserSerializer(serializers.ModelSerializer):
             count += 1
         return username
     
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    
 class PasswordResetConfirmSerializer(serializers.Serializer):
-    new_password = serializers.CharField(
-        write_only=True, required=True, style={"input_type": "password"}
-    )
+    token = serializers.CharField()
+    password = serializers.CharField(write_only=True, min_length=8)
 
