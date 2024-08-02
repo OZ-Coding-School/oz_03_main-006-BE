@@ -8,35 +8,25 @@
 <a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https://github.com/OZ-Coding-School/oz_03_main-002-BE&count_bg=%23D2F3FF&title_bg=%235EEAFF&icon=&icon_color=%23E7E7E7&title=Hits&edge_flat=false"/></a>
 ![GitHub Repo stars](https://img.shields.io/github/stars/OZ-Coding-School/oz_03_main-006-BE)
 
-
 ![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/OZ-Coding-School/oz_03_main-006-BE)
 ![GitHub Issues or Pull Requests](https://img.shields.io/github/issues-closed/OZ-Coding-School/oz_03_main-006-BE)
 ![GitHub Issues or Pull Requests](https://img.shields.io/github/issues-pr/OZ-Coding-School/oz_03_main-006-BE)
 ![GitHub Issues or Pull Requests](https://img.shields.io/github/issues-pr-closed/OZ-Coding-School/oz_03_main-006-BE)
 
-
-
-
 ## Project Tech Stack
 
 ## Programming Language
 ![Python](https://img.shields.io/badge/Python-3.11-blue.svg?logo=python&logoColor=white)
-
 ## Web Framework
 ![Django](https://img.shields.io/badge/Django-4.2-green.svg?logo=django&logoColor=white)
-
 ## REST API Framework
 ![Django REST Framework](https://img.shields.io/badge/Django%20REST%20Framework-3.14-red.svg?logo=django&logoColor=white)
-
 ## Database
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15.2-blue.svg?logo=postgresql&logoColor=white)
-
 ## ORM
 ![Django ORM](https://img.shields.io/badge/Django%20ORM-4.2-green.svg?logo=django&logoColor=white)
-
 ## Search Engine
 ![Elasticsearch](https://img.shields.io/badge/Elasticsearch-7.17-yellow.svg?logo=elasticsearch&logoColor=white)
-
 ## Cloud Services
 ![AWS EC2](https://img.shields.io/badge/AWS%20EC2-2EC1F7?logo=amazon-aws&logoColor=white)
 ![AWS RDS](https://img.shields.io/badge/AWS%20RDS-527FFF?logo=amazon-aws&logoColor=white)
@@ -44,20 +34,15 @@
 ![AWS CloudFront](https://img.shields.io/badge/AWS%20CloudFront-D8652A?logo=amazon-aws&logoColor=white)
 ![AWS ELB](https://img.shields.io/badge/AWS%20ELB-527FFF?logo=amazon-aws&logoColor=white)
 ![AWS Route 53](https://img.shields.io/badge/AWS%20Route%2053-4B32C3?logo=amazon-aws&logoColor=white)
-
 ## Authentication
 ![JWT](https://img.shields.io/badge/JWT-000000.svg?logo=json-web-tokens&logoColor=white)
-
 ## API Documentation
 ![Swagger](https://img.shields.io/badge/Swagger-85EA2D.svg?logo=swagger&logoColor=white)
-
 ## Web Scraping
 ![BeautifulSoup](https://img.shields.io/badge/BeautifulSoup-4-green.svg?logo=python&logoColor=white)
 ![Requests](https://img.shields.io/badge/Requests-2.28-orange.svg?logo=python&logoColor=white)
-
 ## Synchronous Tasks
 ![Selenium](https://img.shields.io/badge/Selenium-4.4-green.svg?logo=selenium&logoColor=white)
-
 ## Other Libraries
 ![djangorestframework-simplejwt](https://img.shields.io/badge/djangorestframework--simplejwt-4.7-red.svg?logo=django&logoColor=white)
 ![django-cors-headers](https://img.shields.io/badge/django--cors--headers-3.14-blue.svg?logo=django&logoColor=white)
@@ -68,48 +53,20 @@
 ![crontab](https://img.shields.io/badge/crontab-0.22-red.svg?logo=linux&logoColor=white)
 
 ## Member
-|Back End Leader|Back End|
-|-----|-----|
-|[<img src="https://avatars.githubusercontent.com/u/87454608?v=4" width="100">](https://github.com/yoonju977)|[<img src="https://avatars.githubusercontent.com/u/164370715?v=4" width="100">](https://github.com/YSY310)|[<img src="https://avatars.githubusercontent.com/u/164370715?v=4" width="100">](https://github.com/siangit)|
-|[YoonjuSong](https://github.com/yoonju977)|[SianLee](https://github.com/siangit)|[SeoyeonLim](https://github.com/YSY310)|
-
+| Profile Image                                                                 | Name           | Role                | GitHub Profile                                     |
+|-------------------------------------------------------------------------------|----------------|---------------------|----------------------------------------------------|
+| ![yoonju](https://avatars.githubusercontent.com/u/64734436?v=4)  | Yoonju   | Backend Manager     | [@yoonju977](https://github.com/yoonju977)         |
+| ![LSY310](https://avatars.githubusercontent.com/u/84219820?v=4) | LSY310 | Backend Developer  | [@LSY310](https://github.com/LSY310)               |
+| ![siangit](https://avatars.githubusercontent.com/u/164474193?v=4)  | Siangit | Backend Developer | [@siangit](https://github.com/siangit)             |
 
 ## Flow Chart
-<img src='https://github.com/OZ-Coding-School/oz_03_main-006-BE/blob/develop/imageFiles/hancycle_Flowchart.jpg'>
+![flowchart](./ImageFiles/hancycle_Flowchart.jpg)
 
 ## ERD
-<img src='https://github.com/OZ-Coding-School/oz_03_main-006-BE/blob/develop/imageFiles/hancycle_ERD.png'>
+![ERD](./ImageFiles/hancycle_ERD.png)
 
 ## Architecture
-<img src='https://github.com/OZ-Coding-School/oz_03_main-006-BE/blob/develop/imageFiles/han_Architecture.png'>
-
-## Folder Structure
-```
-
-[1;36m.[0m
-├── Dockerfile
-├── [1;36mImageFiles[0m
-│   ├── han_Architecture.png
-│   ├── hancycle_ERD.png
-│   └── hancycle_Flowchart.jpg
-├── README.md
-├── crontab
-├── docker-compose.yml
-├── [1;36mhan_cycle[0m
-│   ├── [1;36mapp[0m
-│   ├── [1;36mboards[0m
-│   ├── [1;36mcommon[0m
-│   ├── [1;36mlocations[0m
-│   ├── [31mmanage.py[0m
-│   ├── [1;36mprofiles[0m
-│   ├── [1;36msearch[0m
-│   ├── [1;36musers[0m
-│   └── [1;36mweather[0m
-├── poetry.lock
-├── pyproject.toml
-├── requirements.dev.txt
-├── requirements.txt
-```
+![Architecture](./ImageFiles/han_Architecture.png)
 
 ## API List
 [API 문서 링크](https://api.hancycle.site/redoc/)
