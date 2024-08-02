@@ -12,10 +12,12 @@ from drf_yasg.utils import swagger_auto_schema
 from .models import RefreshToken
 from .serializers import UserSerializer, PasswordResetConfirmSerializer, PasswordResetRequestSerializer
 from django.urls import reverse
+from django.core.mail import send_mail
 
 
 User = get_user_model()
 
+#회원가입으로 사용자 생성
 class RegisterView(APIView):
     @swagger_auto_schema(
         request_body=UserSerializer, responses={201: UserSerializer, 400: "Bad Request"}
@@ -30,6 +32,7 @@ class RegisterView(APIView):
         serializer.save()
         return Response(serializer.data, status=201)
 
+#로그인 (닉네임과 비밀번호로 사용자 인증)
 class LoginView(APIView):
     @swagger_auto_schema(
         request_body=openapi.Schema(
@@ -57,6 +60,7 @@ class LoginView(APIView):
             401: "Authentication Failed",
         },
     )
+    # jwt 및 리프레시 토큰 생성
     def post(self, request):
         """
         로그인 API
@@ -73,7 +77,7 @@ class LoginView(APIView):
         if not user.check_password(password):
             raise AuthenticationFailed("Incorrect password")
 
-        # Generate access token
+        # 엑세스 토큰 생성
         payload = {
             "id": user.id,
             "exp": datetime.datetime.utcnow() + datetime.timedelta(days=7),
@@ -81,11 +85,11 @@ class LoginView(APIView):
         }
         access_token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
-        # Generate refresh token
+        # 리프레쉬 토큰 생성
         expires_at = datetime.datetime.utcnow() + datetime.timedelta(days=30)
         refresh_token = RefreshToken.objects.create(user=user, expires_at=expires_at)
 
-        # Set the JWT token in an HTTP-only cookie with explicit expiration
+        # JWT 토큰은 HTTP-only 쿠키에 세팅 (유효기간 설정)
         response = Response(
             {
                 "id": user.id,
@@ -100,6 +104,7 @@ class LoginView(APIView):
 
         return response
 
+#사용자 정보 조회
 class UserView(APIView):
     @swagger_auto_schema(responses={200: UserSerializer, 401: "Unauthenticated"})
     def get(self, request):
@@ -108,7 +113,7 @@ class UserView(APIView):
         - JWT 토큰을 통해 인증된 사용자 정보 반환
         """
         token = request.COOKIES.get("jwt")
-
+    # JWT 토큰 검증을 통해 사용자 정보 조회
         if not token:
             raise AuthenticationFailed("Unauthenticated!")
 
@@ -122,6 +127,8 @@ class UserView(APIView):
 
         return Response(serializer.data)
 
+# 로그아웃
+#JWT 및 리프레쉬 토큰 쿠키 삭제
 class LogoutView(APIView):
     @swagger_auto_schema(responses={200: "Successfully logged out"})
     def post(self, request):
@@ -135,6 +142,7 @@ class LogoutView(APIView):
         response.data = {"message": "Successfully logged out"}
         return response
 
+#리프레쉬 토큰 (엑세스 토큰 재발급)
 class RefreshTokenView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -175,6 +183,7 @@ class RefreshTokenView(APIView):
 
         return Response({"access_token": new_access_token}, status=200)
 
+#쿠키 인증 (비밀번호 재설정을 위한 토큰 인증)
 class CookieAuthentication(BasePermission):
     def has_permission(self, request, view):
         token = request.COOKIES.get('jwt')
@@ -194,6 +203,7 @@ class CookieAuthentication(BasePermission):
 
         return False
 
+# 계정 삭제 (JWT 쿠키 및 사용자 계정 삭제)
 class DeleteAccountView(APIView):
     permission_classes = [CookieAuthentication]
 
@@ -244,28 +254,9 @@ class DeleteAccountView(APIView):
 
         return response
 
+#비밀번호 재설정 요청
+
 class PasswordResetRequestView(APIView):
-    @swagger_auto_schema(
-        operation_description="비밀번호 재설정 요청 API - 이메일 주소를 받아 비밀번호 재설정 링크를 이메일로 전송",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                "email": openapi.Schema(type=openapi.TYPE_STRING, description="사용자 이메일 주소"),
-            },
-            required=["email"],
-        ),
-        responses={
-            200: openapi.Response(
-                description="비밀번호 재설정 링크가 이메일로 전송되었습니다.",
-                examples={
-                    "application/json": {
-                        "reset_url": "https://example.com/reset-password?token=example_token"
-                    }
-                },
-            ),
-            404: "Not Found",
-        },
-    )
     def post(self, request):
         serializer = PasswordResetRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -289,8 +280,20 @@ class PasswordResetRequestView(APIView):
             reverse("password-reset-confirm") + f"?token={token}"
         )
 
+        # Prepare the email
+        subject = "Password Reset Request"
+        message = f"Hello,\n\nYou requested a password reset. Click the following link to reset your password:\n{reset_url}\n\nIf you did not request this, please ignore this email."
+        from_email = settings.DEFAULT_FROM_EMAIL
+        recipient_list = [email]
+
+        # Send the email
+        send_mail(subject, message, from_email, recipient_list)
+
         return Response({"reset_url": reset_url})
 
+
+#비밀번호 재설정 링크
+#토큰 유효성 검증으로 비밀번호 변경 가능
 class PasswordResetConfirmView(APIView):
     @swagger_auto_schema(
         operation_description="비밀번호 재설정 API - 비밀번호 재설정 링크를 통해 비밀번호를 변경",
@@ -323,6 +326,7 @@ class PasswordResetConfirmView(APIView):
 
         return Response({"detail": "Password has been reset successfully."})
 
+#닉네임 및 프로필 이미지 업데이트
 class NicknameAndProfileImageView(APIView):
     @swagger_auto_schema(
         operation_description="닉네임 및 프로필 이미지 변경 API - JWT 토큰을 통해 인증된 사용자만 사용 가능. 요청 데이터에서 새로운 닉네임과 프로필 이미지를 받아 업데이트합니다.",
