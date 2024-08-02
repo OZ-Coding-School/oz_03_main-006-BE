@@ -101,10 +101,12 @@ class PostDetailView(APIView):
         image_data = ImageSerializer(images, many=True).data
 
         session=request.COOKIES.get(f"post_{pk}")
+        session2=request.COOKIES.get(f"post_{pk}_url")
 
         # 응답 데이터를 구성합니다.
         response_data = {
             f"post_{pk}" : session,
+            f"post_{pk}_url" : session2,
             "post": post_data,
             "images": image_data,
         }
@@ -114,7 +116,8 @@ class PostDetailView(APIView):
         if not session:
             Post.objects.filter(pk=pk).update(view_count=F("view_count") + 1)
             response=JsonResponse(response_data)
-            response.set_cookie(key=f"post_{pk}", value="True", httponly=True, path=f'/post-detail/{pk}')
+            response.set_cookie(key=f"post_{pk}_url", value="True", httponly=True, path=f'/post-detail/{pk}')
+            response.set_cookie(key=f"post_{pk}", value="True", httponly=True)
             return response
 
         else:
