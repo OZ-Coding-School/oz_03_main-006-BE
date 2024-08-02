@@ -3,8 +3,6 @@
     name : Checks #Workflow 이름
     
     on : [push]
-    pull_request:  # Pull Request 발생 시 실행
-
     
     jobs :
       test-link :
@@ -16,18 +14,9 @@
             with : 
               username : ${{ secrets.DOCKERHUB_USER }}
               password : ${{ secrets.DOCKERHUB_TOKEN }}
-              
           - name : Check out - pull repository code #Github 코드를 가져오는 역할
             uses : actions/checkout@v2
-
-          - name: Install Docker Compose # docker-compose 설치
-            run: |
-             sudo curl -L "https://github.com/docker/compose/releases/download/v2.5.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-             sudo chmod +x /usr/local/bin/docker-compose
-             docker-compose version
-
-          - name: Run TestCode
-            run: |
-                 docker-compose run --rm app sh -c 'python manage.py test'
+          - name : Run TestCode
+            run : docker-compose run --rm app sh -c 'python manage.py test'
 #           # - name : Run Flake8 for Lint Check #pep8 스타일 가이드를 잘 준수하고 있는지 체크
 #           #   run : docker-compose run --rm app sh -c 'flake8'
