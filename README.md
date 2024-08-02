@@ -1,6 +1,118 @@
 # 한바퀴  - 당신의 여행 이야기를 나누는 공간
-
+```
 한바퀴는 사용자들이 자신의 여행 경험을 공유하고, 다른 사용자들과 소통하며 여행 정보를 얻을 수 있는 커뮤니티 기반 서비스입니다.
+```
+![GitHub Created At](https://img.shields.io/github/created-at/OZ-Coding-School/oz_03_main-006-BE)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/t/OZ-Coding-School/oz_03_main-006-BE)
+![GitHub last commit](https://img.shields.io/github/last-commit/OZ-Coding-School/oz_03_main-006-BE)
+<a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https://github.com/OZ-Coding-School/oz_03_main-002-BE&count_bg=%23D2F3FF&title_bg=%235EEAFF&icon=&icon_color=%23E7E7E7&title=Hits&edge_flat=false"/></a>
+![GitHub Repo stars](https://img.shields.io/github/stars/OZ-Coding-School/oz_03_main-006-BE)
+
+
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/OZ-Coding-School/oz_03_main-006-BE)
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues-closed/OZ-Coding-School/oz_03_main-006-BE)
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues-pr/OZ-Coding-School/oz_03_main-006-BE)
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues-pr-closed/OZ-Coding-School/oz_03_main-006-BE)
+
+
+
+
+## Project Tech Stack
+
+## Programming Language
+![Python](https://img.shields.io/badge/Python-3.11-blue.svg?logo=python&logoColor=white)
+
+## Web Framework
+![Django](https://img.shields.io/badge/Django-4.2-green.svg?logo=django&logoColor=white)
+
+## REST API Framework
+![Django REST Framework](https://img.shields.io/badge/Django%20REST%20Framework-3.14-red.svg?logo=django&logoColor=white)
+
+## Database
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15.2-blue.svg?logo=postgresql&logoColor=white)
+
+## ORM
+![Django ORM](https://img.shields.io/badge/Django%20ORM-4.2-green.svg?logo=django&logoColor=white)
+
+## Search Engine
+![Elasticsearch](https://img.shields.io/badge/Elasticsearch-7.17-yellow.svg?logo=elasticsearch&logoColor=white)
+
+## Cloud Services
+![AWS EC2](https://img.shields.io/badge/AWS%20EC2-2EC1F7?logo=amazon-aws&logoColor=white)
+![AWS RDS](https://img.shields.io/badge/AWS%20RDS-527FFF?logo=amazon-aws&logoColor=white)
+![AWS S3](https://img.shields.io/badge/AWS%20S3-FBAF3F?logo=amazon-aws&logoColor=white)
+![AWS CloudFront](https://img.shields.io/badge/AWS%20CloudFront-D8652A?logo=amazon-aws&logoColor=white)
+![AWS ELB](https://img.shields.io/badge/AWS%20ELB-527FFF?logo=amazon-aws&logoColor=white)
+![AWS Route 53](https://img.shields.io/badge/AWS%20Route%2053-4B32C3?logo=amazon-aws&logoColor=white)
+
+## Authentication
+![JWT](https://img.shields.io/badge/JWT-000000.svg?logo=json-web-tokens&logoColor=white)
+
+## API Documentation
+![Swagger](https://img.shields.io/badge/Swagger-85EA2D.svg?logo=swagger&logoColor=white)
+
+## Web Scraping
+![BeautifulSoup](https://img.shields.io/badge/BeautifulSoup-4-green.svg?logo=python&logoColor=white)
+![Requests](https://img.shields.io/badge/Requests-2.28-orange.svg?logo=python&logoColor=white)
+
+## Synchronous Tasks
+![Selenium](https://img.shields.io/badge/Selenium-4.4-green.svg?logo=selenium&logoColor=white)
+
+## Other Libraries
+![djangorestframework-simplejwt](https://img.shields.io/badge/djangorestframework--simplejwt-4.7-red.svg?logo=django&logoColor=white)
+![django-cors-headers](https://img.shields.io/badge/django--cors--headers-3.14-blue.svg?logo=django&logoColor=white)
+![django-environ](https://img.shields.io/badge/django--environ-0.9.0-green.svg?logo=django&logoColor=white)
+![django-storages](https://img.shields.io/badge/django--storages-1.13-orange.svg?logo=django&logoColor=white)
+![boto3](https://img.shields.io/badge/boto3-1.26.0-blue.svg?logo=amazon-aws&logoColor=white)
+![python-decouple](https://img.shields.io/badge/python--decouple-3.6-green.svg?logo=python&logoColor=white)
+![crontab](https://img.shields.io/badge/crontab-0.22-red.svg?logo=linux&logoColor=white)
+
+## Member
+|Back End Leader|Back End|
+|-----|-----|
+|[<img src="https://avatars.githubusercontent.com/u/87454608?v=4" width="100">](https://github.com/yoonju977)|[<img src="https://avatars.githubusercontent.com/u/164370715?v=4" width="100">](https://github.com/YSY310)|[<img src="https://avatars.githubusercontent.com/u/164370715?v=4" width="100">](https://github.com/siangit)|
+|[YoonjuSong](https://github.com/yoonju977)|[SianLee](https://github.com/siangit)|[SeoyeonLim](https://github.com/YSY310)|
+
+
+## Flow Chart
+<img src='https://github.com/OZ-Coding-School/oz_03_main-006-BE/blob/develop/imageFiles/hancycle_Flowchart.jpg'>
+
+## ERD
+<img src='https://github.com/OZ-Coding-School/oz_03_main-006-BE/blob/develop/imageFiles/hancycle_ERD.png'>
+
+## Architecture
+<img src='https://github.com/OZ-Coding-School/oz_03_main-006-BE/blob/develop/imageFiles/han_Architecture.png'>
+
+## Folder Structure
+```
+
+[1;36m.[0m
+├── Dockerfile
+├── [1;36mImageFiles[0m
+│   ├── han_Architecture.png
+│   ├── hancycle_ERD.png
+│   └── hancycle_Flowchart.jpg
+├── README.md
+├── crontab
+├── docker-compose.yml
+├── [1;36mhan_cycle[0m
+│   ├── [1;36mapp[0m
+│   ├── [1;36mboards[0m
+│   ├── [1;36mcommon[0m
+│   ├── [1;36mlocations[0m
+│   ├── [31mmanage.py[0m
+│   ├── [1;36mprofiles[0m
+│   ├── [1;36msearch[0m
+│   ├── [1;36musers[0m
+│   └── [1;36mweather[0m
+├── poetry.lock
+├── pyproject.toml
+├── requirements.dev.txt
+├── requirements.txt
+```
+
+## API List
+[API 문서 링크](https://api.hancycle.site/redoc/)
 
 ## 주요 기능:
 
@@ -21,50 +133,3 @@
 | profiles | 회원가입한 사용자의 닉네임, 사진 수정 및 좋아요한 컨텐츠 보기  |
 | weather  | 날씨 정보 관리: 기상청 API를 통해 날씨 정보 수집 및 제공 |
 | search   | 검색 기능: Elasticsearch 기반 게시글 검색 기능 제공 |
-
-## 아키텍처:
-
-- **클라이언트**: React (또는 다른 프론트엔드 프레임워크)
-- **백엔드**: Django, Django REST Framework
-- **데이터베이스**: PostgreSQL (RDS)
-- **검색 엔진**: Elasticsearch
-- **이미지 저장소**: AWS S3
-- **배포**: Docker, AWS EC2
-
-## 기술 스택:
-
-- **언어**: Python
-- **웹 프레임워크**: Django
-- **REST API 프레임워크**: Django REST Framework
-- **데이터베이스**: PostgreSQL
-- **ORM**: Django ORM
-- **검색 엔진**: Elasticsearch
-- **클라우드 서비스**: AWS (EC2, RDS, S3)
-- **인증**: JWT
-- **API 문서**: Swagger
-- **스크래핑**: BeautifulSoup4, requests
-- **동기 작업**: Selenium
-- **기타**: djangorestframework-simplejwt, django-cors-headers, django-environ, django-storages, boto3, python-decouple, crontab
-
-
-## 테스트 고려사항(기능 구현 완료하고 정상작동하는지 한번씩 해보기!)
-
-- 1. 유닛테스트 : 
-
-  pytest와 같은 테스트 프레임워크를 사용하여 모델, 뷰, 시리얼라이저의 유닛 테스트를 실행합니다.
-
-- 2. 통합테스트 :
-
-  API 엔드포인트에 대한 통합 테스트를 통해 전체 기능의 흐름이 정상적인지 확인합니다.
-
-- 3. CSRF 보호 테스트:
-
-  인증이 필요한 API 엔드포인트에서 CSRF 토큰이 제대로 처리되는지 확인합니다.
-	
-- 4. 보안 테스트:
- 
-   HTTPS 설정 및 JWT 인증을 통해 보안이 제대로 적용되었는지 검증합니다.
-	
-- 5. 부하 테스트:
-
-   Docker 환경에서 locust와 같은 도구를 사용하여 애플리케이션의 부하를 테스트합니다.
