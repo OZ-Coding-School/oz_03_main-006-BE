@@ -1,23 +1,20 @@
 import datetime
-from rest_framework.permissions import BasePermission
+from rest_framework.permissions import BasePermission, IsAuthenticated
 import jwt
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.decorators import login_required
-from django.urls import reverse
-from django.utils.translation import gettext_lazy as _
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.permissions import  IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import RefreshToken, User
-from .serializers import UserSerializer, PasswordResetConfirmSerializer
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+from .models import RefreshToken
+from .serializers import UserSerializer, PasswordResetConfirmSerializer, PasswordResetRequestSerializer
+from django.urls import reverse
+
 
 User = get_user_model()
-
 
 class RegisterView(APIView):
     @swagger_auto_schema(
@@ -29,24 +26,17 @@ class RegisterView(APIView):
         - 데이터 유효성 검사 후 사용자 생성
         """
         serializer = UserSerializer(data=request.data)
-        serializer.is_valid(
-            raise_exception=True
-        )  # Raise exception if the data is invalid
+        serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=201)
-
 
 class LoginView(APIView):
     @swagger_auto_schema(
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                "nickname": openapi.Schema(
-                    type=openapi.TYPE_STRING, description="User nickname"
-                ),
-                "password": openapi.Schema(
-                    type=openapi.TYPE_STRING, description="User password"
-                ),
+                "nickname": openapi.Schema(type=openapi.TYPE_STRING, description="User nickname"),
+                "password": openapi.Schema(type=openapi.TYPE_STRING, description="User password"),
             },
             required=["nickname", "password"],
         ),
@@ -60,7 +50,6 @@ class LoginView(APIView):
                         "profile_image": "example_image_url",
                         "email": "user@example.com",
                         "username": "example_username",
-                        # Token not included in the response body
                     }
                 },
             ),
@@ -93,12 +82,10 @@ class LoginView(APIView):
         access_token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
         # Generate refresh token
-        expires_at = datetime.datetime.utcnow() + datetime.timedelta(
-            days=30
-        )  # Refresh token valid for 30 days
+        expires_at = datetime.datetime.utcnow() + datetime.timedelta(days=30)
         refresh_token = RefreshToken.objects.create(user=user, expires_at=expires_at)
 
-        # Set the JWT token in an HTTP-only cookie
+        # Set the JWT token in an HTTP-only cookie with explicit expiration
         response = Response(
             {
                 "id": user.id,
@@ -106,16 +93,12 @@ class LoginView(APIView):
                 "profile_image": user.profile_image.url if user.profile_image else None,
                 "email": user.email,
                 "username": user.username,
-                # Token not included in the response body
             }
         )
-        response.set_cookie(key="jwt", value=access_token, httponly=True)
-        response.set_cookie(
-            key="refresh_token", value=str(refresh_token.token), httponly=True
-        )
+        response.set_cookie(key="jwt", value=access_token, httponly=True, expires=datetime.datetime.utcnow() + datetime.timedelta(days=7))
+        response.set_cookie(key="refresh_token", value=str(refresh_token.token), httponly=True, expires=expires_at)
 
         return response
-
 
 class UserView(APIView):
     @swagger_auto_schema(responses={200: UserSerializer, 401: "Unauthenticated"})
@@ -139,7 +122,6 @@ class UserView(APIView):
 
         return Response(serializer.data)
 
-
 class LogoutView(APIView):
     @swagger_auto_schema(responses={200: "Successfully logged out"})
     def post(self, request):
@@ -149,9 +131,9 @@ class LogoutView(APIView):
         """
         response = Response()
         response.delete_cookie("jwt")
+        response.delete_cookie("refresh_token")
         response.data = {"message": "Successfully logged out"}
         return response
-
 
 class RefreshTokenView(APIView):
     permission_classes = [IsAuthenticated]
@@ -161,9 +143,7 @@ class RefreshTokenView(APIView):
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                "refresh_token": openapi.Schema(
-                    type=openapi.TYPE_STRING, description="리프레시 토큰"
-                ),
+                "refresh_token": openapi.Schema(type=openapi.TYPE_STRING, description="리프레시 토큰"),
             },
             required=["refresh_token"],
         ),
@@ -182,9 +162,6 @@ class RefreshTokenView(APIView):
         except RefreshToken.DoesNotExist:
             return Response({"detail": "Invalid refresh token."}, status=401)
 
-        if not isinstance(token, RefreshToken):
-            return Response({"detail": "Invalid token type."}, status=401)
-
         if token.is_expired():
             return Response({"detail": "Refresh token expired."}, status=401)
 
@@ -198,18 +175,12 @@ class RefreshTokenView(APIView):
 
         return Response({"access_token": new_access_token}, status=200)
 
-
-
-
-
 class CookieAuthentication(BasePermission):
     def has_permission(self, request, view):
-        # 쿠키에서 JWT 토큰을 가져옵니다.
         token = request.COOKIES.get('jwt')
         if not token:
             return False
         
-        # 토큰 검증
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
             request.user = User.objects.get(id=payload['id'])
@@ -222,11 +193,6 @@ class CookieAuthentication(BasePermission):
             raise AuthenticationFailed(_('User not found.'))
 
         return False
-
-
-
-
-
 
 class DeleteAccountView(APIView):
     permission_classes = [CookieAuthentication]
@@ -245,15 +211,13 @@ class DeleteAccountView(APIView):
         - JWT 토큰을 통해 인증된 사용자만 사용 가능
         - 인증된 사용자의 계정을 삭제합니다.
         """
-        token = request.headers.get("Authorization")
-        if token and token.startswith("Bearer "):
-            token = token[len("Bearer "):]
-        else:
+        token = request.COOKIES.get("jwt")
+        if not token:
             return Response(
                 {"detail": "인증 자격 증명이 제공되지 않았습니다."},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
-        
+
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
             user = User.objects.get(id=payload["id"])
@@ -280,18 +244,13 @@ class DeleteAccountView(APIView):
 
         return response
 
-
-
-
 class PasswordResetRequestView(APIView):
     @swagger_auto_schema(
         operation_description="비밀번호 재설정 요청 API - 이메일 주소를 받아 비밀번호 재설정 링크를 이메일로 전송",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                "email": openapi.Schema(
-                    type=openapi.TYPE_STRING, description="사용자 이메일 주소"
-                ),
+                "email": openapi.Schema(type=openapi.TYPE_STRING, description="사용자 이메일 주소"),
             },
             required=["email"],
         ),
@@ -330,65 +289,39 @@ class PasswordResetRequestView(APIView):
             reverse("password-reset-confirm") + f"?token={token}"
         )
 
-        return Response({"reset_url": reset_url}, status=status.HTTP_200_OK)
-
+        return Response({"reset_url": reset_url})
 
 class PasswordResetConfirmView(APIView):
     @swagger_auto_schema(
-        operation_description="비밀번호 재설정 API - 새로운 비밀번호로 사용자 비밀번호를 업데이트",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                "new_password": openapi.Schema(
-                    type=openapi.TYPE_STRING, description="새로운 비밀번호"
-                ),
-            },
-            required=["new_password"],
-        ),
+        operation_description="비밀번호 재설정 API - 비밀번호 재설정 링크를 통해 비밀번호를 변경",
+        request_body=PasswordResetConfirmSerializer,
         responses={
-            200: "Password has been reset successfully.",
+            200: "Password reset successful",
             400: "Bad Request",
-            401: "Unauthorized",
+            404: "Not Found",
         },
     )
     def post(self, request):
-        token = request.COOKIES.get("jwt")
-        if not token:
-            return Response(
-                {"detail": "Authentication credentials were not provided."},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        token = request.data.get("token")
+        new_password = serializer.validated_data["password"]
 
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            user = User.objects.get(id=payload["id"])
         except jwt.ExpiredSignatureError:
-            return Response(
-                {"detail": "Token has expired."}, status=status.HTTP_401_UNAUTHORIZED
-            )
+            return Response({"detail": "Token has expired."}, status=status.HTTP_400_BAD_REQUEST)
         except jwt.InvalidTokenError:
-            return Response(
-                {"detail": "Invalid token."}, status=status.HTTP_401_UNAUTHORIZED
-            )
-        except User.DoesNotExist:
-            return Response(
-                {"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({"detail": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = PasswordResetConfirmSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        user = User.objects.filter(id=payload["id"], email=payload["email"]).first()
+        if not user:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        new_password = serializer.validated_data["new_password"]
         user.set_password(new_password)
         user.save()
 
-        return Response(
-            {"detail": "Password has been reset successfully."},
-            status=status.HTTP_200_OK,
-        )
-
-
-
+        return Response({"detail": "Password has been reset successfully."})
 
 class NicknameAndProfileImageView(APIView):
     @swagger_auto_schema(
