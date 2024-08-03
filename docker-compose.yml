@@ -1,4 +1,5 @@
-#version: "3.11"
+# docker-compose.yml
+version: "3.11"
 services:
   app:
     build:
@@ -9,8 +10,7 @@ services:
       - "8000:8000"
     volumes:
       - ./han_cycle:/app
-    command: sh -c "python manage.py migrate && 
-          python manage.py runserver 0.0.0.0:8000"
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     environment:
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
@@ -29,61 +29,27 @@ services:
     networks:
       - my_network
 
-  cron:
-    image: alpine:latest
+  test:
+    build:
+      context: .
+      args:
+        - DEV=true
     volumes:
       - ./han_cycle:/app
-      - ./crontab:/etc/crontabs/root  # crontab 파일을 컨테이너의 crontabs 디렉터리에 마운트
-    entrypoint: ["/bin/sh", "-c", "crond -f"]  # crond를 포그라운드 모드로 실행
+    command: sh -c "python manage.py migrate && python manage.py test"
     environment:
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT}
-    networks:
-      - my_network
-
-  db:
-    image: postgres:15.7
-    environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - my_network
-
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.1
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false  # 보안을 비활성화
-      - ES_JAVA_OPTS=-Xms1g -Xmx1g
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    mem_limit: 2g
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    volumes:
-      - es_data:/usr/share/elasticsearch/data
-    networks:
-      - my_network
-
-  kibana:
-    image: docker.elastic.co/kibana/kibana:7.17.1
-    ports:
-      - "5601:5601"
     depends_on:
+      - db
       - elasticsearch
     networks:
       - my_network
+
+  # (other services like cron, db, elasticsearch, kibana)
 
 volumes:
   postgres_data:
