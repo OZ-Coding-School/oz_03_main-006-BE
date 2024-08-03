@@ -17,3 +17,11 @@
 #         PostIndex.init()
 #         UserIndex.init()
 #         LocationIndex.init()
+from django.apps import AppConfig
+
+
+class SearchConfig(AppConfig):
+    name = "search"
+
+    def ready(self):
+        import search.signals  # 시그널 핸들러가 등록되도록 함

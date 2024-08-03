@@ -4,11 +4,11 @@ from .views import (
     DeleteAccountView,
     LoginView,
     LogoutView,
+    NicknameAndProfileImageView,
     PasswordResetConfirmView,
     PasswordResetRequestView,
     RegisterView,
     UserView,
-    NicknameAndProfileImageView,
 )
 
 # URL 패턴 정의
@@ -33,8 +33,6 @@ urlpatterns = [
         name="password-reset-confirm",
     ),  # 비밀번호 재설정 확인
     path(
-        "accounts/edit",
-        NicknameAndProfileImageView.as_view(),
-        name="edit"
-    ), #nickname and profile image change
+        "accounts/edit", NicknameAndProfileImageView.as_view(), name="edit"
+    ),  # 닉네임 및 프로필 이미지 업데이트
 ]

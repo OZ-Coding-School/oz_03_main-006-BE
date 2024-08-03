@@ -1,2 +1,6 @@
+# 사용될 쉘을 /bin/sh로 설정
 SHELL=/bin/sh
+
+# 매일 새벽 2시 20분에 Django 프로젝트 디렉토리로 이동한 후, fetch_weather 명령어를 실행
+# 실행 결과는 /var/log/cron.log에 저장되며, 오류 메시지 또한 이 파일에 기록됨
 20 2 * * * cd /app && python manage.py fetch_weather >> /var/log/cron.log 2>&1

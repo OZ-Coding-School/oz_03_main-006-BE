@@ -8,7 +8,6 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, status
 from rest_framework.decorators import api_view
 
-
 # from rest_framework.decorators import permissions_classes
 from rest_framework.pagination import PageNumberPagination
 
@@ -100,21 +99,22 @@ class PostDetailView(APIView):
         # 이미지를 직렬화합니다.
         image_data = ImageSerializer(images, many=True).data
 
-        session=request.COOKIES.get(f"post_{pk}")
+        session = request.COOKIES.get(f"post_{pk}")
 
         # 응답 데이터를 구성합니다.
         response_data = {
-            f"post_{pk}" : session,
+            f"post_{pk}": session,
             "post": post_data,
             "images": image_data,
         }
-        
-        
+
         # 세션 키를 확인하여 조회수를 한 번만 증가시킵니다.
         if not session:
             Post.objects.filter(pk=pk).update(view_count=F("view_count") + 1)
-            response=JsonResponse(response_data)
-            response.set_cookie(key=f"post_{pk}", value="True", httponly=True, samesite="Lax")
+            response = JsonResponse(response_data)
+            response.set_cookie(
+                key=f"post_{pk}", value="True", httponly=True, samesite="Lax"
+            )
             return response
 
         else:
@@ -373,89 +373,96 @@ def liked_posts(request, user_id):
     return Response(serializer.data)
 
 
+# 특정 위치의 최신 게시물 목록을 반환하는 뷰 클래스
 class PostsByLocationLatestView(generics.ListAPIView):
-    serializer_class = PostListSerializer
-    pagination_class = CustomPagination
+    serializer_class = PostListSerializer  # 게시물 목록에 대한 직렬화 클래스
+    pagination_class = CustomPagination  # 페이지네이션 설정
 
     @swagger_auto_schema(
-        operation_description="Get latest posts for a specific location",
+        operation_description="특정 위치의 최신 게시물 목록을 가져옵니다.",
         responses={200: PostListSerializer(many=True)},
         manual_parameters=[
             openapi.Parameter(
                 "location_id",
                 openapi.IN_PATH,
-                description="ID of the location",
+                description="위치의 ID",
                 type=openapi.TYPE_INTEGER,
             )
         ],
     )
     def get(self, request, *args, **kwargs):
+        # GET 요청을 처리하여 최신 게시물 목록을 반환
         return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
+        # 쿼리셋을 정의하여 특정 위치의 최신 게시물만 필터링
         location_id = self.kwargs["location_id"]
         return Post.objects.filter(location__location_id=location_id).order_by(
             "-created_at"
         )
 
 
+# 특정 위치의 가장 인기 있는 게시물 목록을 반환하는 뷰 클래스
 class PostsByLocationPopularView(generics.ListAPIView):
-    serializer_class = PostListSerializer
-    pagination_class = CustomPagination
+    serializer_class = PostListSerializer  # 게시물 목록에 대한 직렬화 클래스
+    pagination_class = CustomPagination  # 페이지네이션 설정
 
     @swagger_auto_schema(
-        operation_description="Get most popular posts for a specific location",
+        operation_description="특정 위치의 가장 인기 있는 게시물 목록을 가져옵니다.",
         responses={200: PostListSerializer(many=True)},
         manual_parameters=[
             openapi.Parameter(
                 "location_id",
                 openapi.IN_PATH,
-                description="ID of the location",
+                description="위치의 ID",
                 type=openapi.TYPE_INTEGER,
             )
         ],
     )
     def get(self, request, *args, **kwargs):
+        # GET 요청을 처리하여 인기 있는 게시물 목록을 반환
         return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
+        # 쿼리셋을 정의하여 특정 위치의 조회수가 가장 많은 게시물만 필터링
         location_id = self.kwargs["location_id"]
         return Post.objects.filter(location__location_id=location_id).order_by(
             "-view_count"
         )
 
 
-# 새로운 최신순 전체 게시물 뷰
+# 전체 위치의 최신 게시물 목록을 반환하는 뷰 클래스
 class AllPostsByLocationLatestView(generics.ListAPIView):
-    serializer_class = PostListSerializer
+    serializer_class = PostListSerializer  # 게시물 목록에 대한 직렬화 클래스
 
     @swagger_auto_schema(
-        operation_description="Retrieve all posts for a specific location, ordered by latest.",
+        operation_description="특정 위치의 모든 최신 게시물을 가져옵니다.",
         responses={200: PostListSerializer(many=True)},
         manual_parameters=[
             openapi.Parameter(
                 "location_id",
                 openapi.IN_PATH,
-                description="ID of the location to retrieve posts for",
+                description="게시물을 가져올 위치의 ID",
                 type=openapi.TYPE_INTEGER,
             )
         ],
     )
     def get(self, request, *args, **kwargs):
         """
-        Get all posts for a specific location, ordered by latest creation time.
+        특정 위치의 모든 최신 게시물을 가져옵니다.
         """
         return self.list(request, *args, **kwargs)
 
     def get_queryset(self):
+        # 쿼리셋을 정의하여 특정 위치의 모든 최신 게시물만 필터링
         location_id = self.kwargs["location_id"]
         return Post.objects.filter(location__location_id=location_id).order_by(
             "-created_at"
         )
 
     def list(self, request, *args, **kwargs):
+        # 쿼리셋을 페이지네이션하고 직렬화하여 응답
         queryset = self.filter_queryset(self.get_queryset())
-
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -465,37 +472,38 @@ class AllPostsByLocationLatestView(generics.ListAPIView):
         return Response(serializer.data)
 
 
-# 새로운 조회수순 전체 게시물 뷰
+# 전체 위치의 인기 있는 게시물 목록을 반환하는 뷰 클래스
 class AllPostsByLocationPopularView(generics.ListAPIView):
-    serializer_class = PostListSerializer
+    serializer_class = PostListSerializer  # 게시물 목록에 대한 직렬화 클래스
 
     @swagger_auto_schema(
-        operation_description="Retrieve all posts for a specific location, ordered by popularity (view count).",
+        operation_description="특정 위치의 모든 인기 게시물을 가져옵니다.",
         responses={200: PostListSerializer(many=True)},
         manual_parameters=[
             openapi.Parameter(
                 "location_id",
                 openapi.IN_PATH,
-                description="ID of the location to retrieve posts for",
+                description="게시물을 가져올 위치의 ID",
                 type=openapi.TYPE_INTEGER,
             )
         ],
     )
     def get(self, request, *args, **kwargs):
         """
-        Get all posts for a specific location, ordered by view count.
+        특정 위치의 모든 인기 게시물을 가져옵니다.
         """
         return self.list(request, *args, **kwargs)
 
     def get_queryset(self):
+        # 쿼리셋을 정의하여 특정 위치의 모든 인기 있는 게시물만 필터링
         location_id = self.kwargs["location_id"]
         return Post.objects.filter(location__location_id=location_id).order_by(
             "-view_count"
         )
 
     def list(self, request, *args, **kwargs):
+        # 쿼리셋을 페이지네이션하고 직렬화하여 응답
         queryset = self.filter_queryset(self.get_queryset())
-
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
