@@ -13,6 +13,7 @@ from .models import RefreshToken
 from .serializers import UserSerializer, PasswordResetConfirmSerializer, PasswordResetRequestSerializer
 from django.urls import reverse
 from django.core.mail import send_mail
+from rest_framework.parsers import MultiPartParser
 
 
 User = get_user_model()
@@ -45,7 +46,7 @@ class LoginView(APIView):
         ),
         responses={
             200: openapi.Response(
-                description="Login successful",
+                description="로그아웃 성공",
                 examples={
                     "application/json": {
                         "id": 1,
@@ -72,10 +73,10 @@ class LoginView(APIView):
         user = User.objects.filter(nickname=nickname).first()
 
         if user is None:
-            raise AuthenticationFailed("User not found!")
+            raise AuthenticationFailed("회원정보가 없습니다")
 
         if not user.check_password(password):
-            raise AuthenticationFailed("Incorrect password")
+            raise AuthenticationFailed("패스워드가 틀렸습니다")
 
         # 엑세스 토큰 생성
         payload = {
@@ -130,7 +131,7 @@ class UserView(APIView):
 # 로그아웃
 #JWT 및 리프레쉬 토큰 쿠키 삭제
 class LogoutView(APIView):
-    @swagger_auto_schema(responses={200: "Successfully logged out"})
+    @swagger_auto_schema(responses={200: "성공적으로 로그아웃이 되었습니다"})
     def post(self, request):
         """
         로그아웃 API
@@ -139,7 +140,7 @@ class LogoutView(APIView):
         response = Response()
         response.delete_cookie("jwt")
         response.delete_cookie("refresh_token")
-        response.data = {"message": "Successfully logged out"}
+        response.data = {"message": "성공적으로 로그아웃이 되었습니다"}
         return response
 
 #리프레쉬 토큰 (엑세스 토큰 재발급)
@@ -299,7 +300,7 @@ class PasswordResetConfirmView(APIView):
         operation_description="비밀번호 재설정 API - 비밀번호 재설정 링크를 통해 비밀번호를 변경",
         request_body=PasswordResetConfirmSerializer,
         responses={
-            200: "Password reset successful",
+            200: "패스워드가 변경되었습니다",
             400: "Bad Request",
             404: "Not Found",
         },
@@ -328,6 +329,8 @@ class PasswordResetConfirmView(APIView):
 
 #닉네임 및 프로필 이미지 업데이트
 class NicknameAndProfileImageView(APIView):
+    parser_classes = [MultiPartParser]  # MultiPartParser를 사용하여 파일 업로드를 지원합니다.
+
     @swagger_auto_schema(
         operation_description="닉네임 및 프로필 이미지 변경 API - JWT 토큰을 통해 인증된 사용자만 사용 가능. 요청 데이터에서 새로운 닉네임과 프로필 이미지를 받아 업데이트합니다.",
         request_body=openapi.Schema(
@@ -337,7 +340,7 @@ class NicknameAndProfileImageView(APIView):
                     type=openapi.TYPE_STRING, description="새로운 닉네임"
                 ),
                 "profile_image": openapi.Schema(
-                    type=openapi.TYPE_STRING, description="새로운 프로필 이미지 URL"
+                    type=openapi.TYPE_FILE, description="새로운 프로필 이미지 파일"
                 ),
             },
             required=["nickname"],
@@ -360,7 +363,7 @@ class NicknameAndProfileImageView(APIView):
         token = request.COOKIES.get("jwt")
         if not token:
             return Response(
-                {"detail": "Authentication credentials were not provided."},
+                {"detail": "인증 자격 증명이 제공되지 않았습니다."},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
@@ -369,41 +372,43 @@ class NicknameAndProfileImageView(APIView):
             user = User.objects.get(id=payload["id"])
         except jwt.ExpiredSignatureError:
             return Response(
-                {"detail": "Token has expired."}, status=status.HTTP_401_UNAUTHORIZED
+                {"detail": "토큰이 만료되었습니다."}, status=status.HTTP_401_UNAUTHORIZED
             )
         except jwt.InvalidTokenError:
             return Response(
-                {"detail": "Invalid token."}, status=status.HTTP_401_UNAUTHORIZED
+                {"detail": "유효하지 않은 토큰입니다."}, status=status.HTTP_401_UNAUTHORIZED
             )
         except User.DoesNotExist:
             return Response(
-                {"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND
+                {"detail": "사용자를 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND
             )
 
         new_nickname = request.data.get("nickname")
-        new_profile_image = request.data.get("profile_image")
+        new_profile_image = request.FILES.get("profile_image")
 
         if not new_nickname:
             return Response(
-                {"detail": "New nickname is required."},
+                {"detail": "새로운 닉네임은 필수입니다."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         # 닉네임 중복 확인 (현재 사용자 포함)
-        if User.objects.filter(nickname=new_nickname).exists():
+        if User.objects.filter(nickname=new_nickname).exclude(id=user.id).exists():
             return Response(
-                {"detail": "Nickname already exists."},
+                {"detail": "이미 존재하는 닉네임입니다."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         user.nickname = new_nickname
 
+        # 프로필 이미지가 있으면 저장
         if new_profile_image:
             user.profile_image = new_profile_image
 
         user.save()
 
+        serializer = UserSerializer(user)
         return Response(
-            {"detail": "Nickname and profile image updated successfully."},
+            {"detail": "닉네임 및 프로필 이미지가 성공적으로 업데이트되었습니다.", "user": serializer.data},
             status=status.HTTP_200_OK,
         )
