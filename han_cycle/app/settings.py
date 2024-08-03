@@ -20,21 +20,23 @@ from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError
 from retrying import retry
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# 프로젝트의 루트 디렉토리를 정의합니다.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
+# 빠른 개발 설정 - 운영 환경에 적합하지 않음
+# 운영 환경에서 사용할 수 있는 설정을 확인하려면 아래 링크를 참조하세요:
+# https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
+# .env 파일에서 환경 변수를 로드하여 설정에 사용할 수 있도록 합니다.
 load_dotenv(override=True)
-# SECURITY WARNING: keep the secret key used in production secret!
 
+# 보안 경고: 운영 환경에서는 이 값을 비밀로 유지해야 합니다.
 SECRET_KEY = os.getenv("SECRET_KEY", "default_secret_key")
 
-
-# SECURITY WARNING: don't run with debug turned on in production!
+# 보안 경고: 운영 환경에서는 디버그 모드를 꺼야 합니다.
 DEBUG = True
 
+# ALLOWED_HOSTS는 애플리케이션이 접근을 허용하는 도메인 또는 IP 주소를 정의합니다.
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
@@ -45,10 +47,10 @@ ALLOWED_HOSTS = [
     "172.31.0.5",
 ]
 
-# front-end ports to access our app
+# 모든 출처에서의 CORS 요청을 허용합니다.
 CORS_ORIGIN_ALLOW_ALL = True
 
-# 프론트 테스트용
+# 특정 출처에서의 CORS 요청만 허용합니다 (테스트용).
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "https://hancycle.site",
@@ -57,12 +59,15 @@ CORS_ALLOWED_ORIGINS = [
     "https://api.hancycle.site",
 ]
 
-CORS_ALLOW_CREDENTIALS = True  # if it's false, front-end can't get cookie
+# 인증된 요청에 대해서만 쿠키를 전달할 수 있도록 설정합니다.
+CORS_ALLOW_CREDENTIALS = True
 
+# SSL을 사용하는 경우에만 X-Forwarded-Proto 헤더를 통해 SSL을 확인합니다.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 
-# Retry configuration: 5 retries with exponential backoff (max wait 10 seconds)
+# Elasticsearch 서버가 가동될 때까지 대기하는 함수
+# 재시도 설정: 최대 5번의 재시도를 시도하며, 지수 백오프를 적용해 최대 10초 동안 대기합니다.
 @retry(
     stop_max_attempt_number=5,
     wait_exponential_multiplier=1000,
@@ -74,35 +79,32 @@ def wait_for_elasticsearch():
         raise ConnectionError("Elasticsearch server is not available")
 
 
-# # Call the wait function before Django starts
-# wait_for_elasticsearch()
-
-# Application definition
+# Django 애플리케이션 정의
 INSTALLED_APPS = [
-    "common",
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-    "corsheaders",
-    "boards.apps.BoardsConfig",
-    "locations",
-    "users",
-    # django-authentication apps
-    "django.contrib.sites",
-    "storages",
-    "rest_framework",
-    "social_django",
-    "rest_framework.authtoken",
-    "drf_yasg",
-    "tinymce",
-    "search",
-    "django_crontab",
-    "weather",
+    "common",  # 프로젝트에서 공통으로 사용하는 기능이나 설정을 모아둔 앱
+    "django.contrib.admin",  # Django의 관리자 사이트 기능을 제공하는 앱
+    "django.contrib.auth",  # 사용자 인증과 권한 부여를 관리하는 앱
+    "django.contrib.contenttypes",  # Django의 컨텐츠 유형 시스템을 관리하는 앱 (모델을 다루는 데 필수)
+    "django.contrib.sessions",  # 사용자 세션을 관리하는 앱
+    "django.contrib.messages",  # 일회성 알림 메시지를 관리하는 앱
+    "django.contrib.staticfiles",  # 정적 파일을 관리하는 앱 (CSS, JS, 이미지 등)
+    "corsheaders",  # Cross-Origin Resource Sharing (CORS) 처리를 위한 앱
+    "boards.apps.BoardsConfig",  # 게시판 관련 기능을 관리하는 커스텀 앱
+    "locations",  # 위치 정보와 관련된 데이터를 관리하는 커스텀 앱
+    "users",  # 사용자 정보와 인증 관련 기능을 관리하는 커스텀 앱
+    "django.contrib.sites",  # 멀티사이트 관리를 위한 앱 (여러 사이트를 운영할 경우 사용)
+    "storages",  # AWS S3 등 외부 스토리지와의 연동을 위한 앱
+    "rest_framework",  # Django REST Framework - API를 구축하는 데 사용하는 앱
+    "social_django",  # 소셜 로그인 (Google, Facebook 등)을 위한 Django 앱
+    "rest_framework.authtoken",  # 토큰 기반 인증을 제공하는 앱
+    "drf_yasg",  # Swagger/OpenAPI 기반 API 문서화를 위한 앱
+    "tinymce",  # 풍부한 텍스트 편집기 (WYSIWYG) 지원을 위한 앱
+    "search",  # 검색 기능을 구현하는 커스텀 앱
+    "django_crontab",  # 주기적인 작업(Cron Job)을 설정하고 관리하는 앱
+    "weather",  # 날씨 정보와 관련된 데이터를 관리하는 커스텀 앱
 ]
 
+# Django에서 사용할 미들웨어 정의
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -114,7 +116,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-# 스웨거 세팅, 커스텀유저 모델 허용가능으로 수정
+# Swagger 설정: API 문서화를 위해 사용됩니다.
 SWAGGER_SETTINGS = {
     "SECURITY_DEFINITIONS": {
         "Bearer": {"type": "apiKey", "name": "Authorization", "in": "header"}
@@ -124,12 +126,14 @@ SWAGGER_SETTINGS = {
 }
 
 
-# django-authentication
+# django-authentication 설정
 SITE_ID = 1
 SOCIALACCOUNT_LOGIN_ON_GET = True
 
+# 프로젝트의 URL 설정 파일
 ROOT_URLCONF = "app.urls"
 
+# 템플릿 설정: Django가 사용할 템플릿 엔진 및 템플릿 디렉토리를 정의합니다.
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -147,10 +151,7 @@ TEMPLATES = [
 ]
 
 
-# Database
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
-
+# 데이터베이스 설정: PostgreSQL 사용
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -163,9 +164,7 @@ DATABASES = {
 }
 
 
-# Password validation
-# https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
-
+# 비밀번호 검증 설정: Django의 기본 비밀번호 검증기 사용
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -181,9 +180,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Internationalization
-# https://docs.djangoproject.com/en/5.0/topics/i18n/
-
+# 국제화 및 로케일 설정
 LANGUAGE_CODE = "en-us"
 
 TIME_ZONE = "Asia/Seoul"  # 한국 시간대 설정
@@ -193,19 +190,17 @@ USE_I18N = True
 
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
-
+# 정적 파일 설정
 STATIC_URL = "static/"
 
-# django-authentication
+# django-authentication 백엔드 설정
 AUTHENTICATION_BACKENDS = [
-    # Needed to login by username in Django admin, regardless of `allauth`
+    # Django admin에서의 사용자 이름 로그인 지원
     "django.contrib.auth.backends.ModelBackend",
 ]
 
 
-# backend check the login for test
+# 이메일 백엔드 설정: Gmail SMTP 서버를 사용하여 이메일을 전송합니다.
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"  # Gmail SMTP 서버 주소
 EMAIL_PORT = 587  # Gmail SMTP 포트
@@ -215,21 +210,20 @@ EMAIL_HOST_USER = "hancycle585@gmail.com"  # 이메일 서버 로그인용 이�
 EMAIL_HOST_PASSWORD = "awvt ujct gvsu ahlm"  # 이메일 서버 로그인용 비밀번호
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER  # 이메일 발신자 주소
 
-# make email is required for login
+# 로그인 시 이메일이 필수임을 설정
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_REQUIRED = True
 SOCIALACCOUNT_ADAPTER = "users.adapters.CustomSocialAccountAdapter"
 LOGIN_REDIRECT_URL = "/users/accounts/profile/"
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
-
+# 기본 자동 필드 설정
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# WSGI 애플리케이션 경로
 WSGI_APPLICATION = "app.wsgi.application"
 
 
-# S3 setting
+# S3 설정: 미디어 파일을 AWS S3에 저장
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
@@ -248,17 +242,18 @@ AWS_DEFAULT_ACL = None
 
 DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 
-# Media settings
+# 미디어 파일 URL 및 루트 설정
 MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-# 엘라스틱서치 의존성
+# Elasticsearch 설정
 ELASTICSEARCH_DSL = {
     "default": {"hosts": "http://elasticsearch:9200"},
 }
 
 
-# 기상청 API요청
+# 기상청 API 요청 설정
 KMA_API_KEY = os.getenv("KMA_API_KEY")
-# override default user django
+
+# 기본 사용자 모델을 덮어쓰는 설정
 AUTH_USER_MODEL = "users.User"

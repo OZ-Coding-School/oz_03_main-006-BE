@@ -1,94 +1,104 @@
+# Docker Compose 설정 파일 (버전 3.11)
+# 이 파일은 여러 서비스를 정의하고 이들이 어떻게 상호작용하는지 설명합니다.
+# app 서비스: Django 애플리케이션을 실행하는 메인 서비스입니다. 데이터베이스 마이그레이션을 수행하고, Django 서버를 시작합니다.
+# cron 서비스: Alpine Linux를 기반으로 하는 간단한 cron 서비스입니다. 주기적으로 작업을 실행할 수 있습니다.
+# db 서비스: PostgreSQL 데이터베이스를 제공하는 서비스입니다.
+# elasticsearch 서비스: Elasticsearch 서버를 실행하는 서비스입니다.
+# kibana 서비스: Elasticsearch의 시각화 도구인 Kibana를 실행하는 서비스입니다.
+# volumes: PostgreSQL과 Elasticsearch 데이터를 영구적으로 저장하기 위한 볼륨입니다.
+# networks: 모든 서비스가 상호 연결될 수 있는 네트워크를 정의합니다. bridge 드라이버를 사용하여 각 서비스가 동일한 네트워크에 연결됩니다.
+
 #version: "3.11"
 services:
   app:
     build:
-      context: .
+      context: .  # Dockerfile이 위치한 디렉토리를 지정합니다.
       args:
-        - DEV=true
+        - DEV=true  # 개발 환경에서 사용할 추가 빌드 인수를 전달합니다.
     ports:
-      - "8000:8000"
+      - "8000:8000"  # 호스트의 8000 포트를 컨테이너의 8000 포트에 매핑합니다.
     volumes:
-      - ./han_cycle:/app
+      - ./han_cycle:/app  # 로컬의 han_cycle 디렉토리를 컨테이너의 /app 디렉토리에 마운트합니다.
     command: sh -c "python manage.py migrate && 
-          python manage.py runserver 0.0.0.0:8000"
+          python manage.py runserver 0.0.0.0:8000"  # 마이그레이션을 실행한 후 Django 서버를 시작합니다.
     environment:
-      - DB_NAME=${DB_NAME}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME}
-      - AWS_S3_REGION_NAME=${AWS_S3_REGION_NAME}
-      - KMA_API_KEY=${KMA_API_KEY}
-      - TZ=Asia/Seoul
+      - DB_NAME=${DB_NAME}  # 데이터베이스 이름을 환경 변수로 전달합니다.
+      - DB_USER=${DB_USER}  # 데이터베이스 사용자 이름을 환경 변수로 전달합니다.
+      - DB_PASSWORD=${DB_PASSWORD}  # 데이터베이스 비밀번호를 환경 변수로 전달합니다.
+      - DB_HOST=${DB_HOST}  # 데이터베이스 호스트를 환경 변수로 전달합니다.
+      - DB_PORT=${DB_PORT}  # 데이터베이스 포트를 환경 변수로 전달합니다.
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}  # AWS 액세스 키를 환경 변수로 전달합니다.
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}  # AWS 시크릿 액세스 키를 환경 변수로 전달합니다.
+      - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME}  # S3 버킷 이름을 환경 변수로 전달합니다.
+      - AWS_S3_REGION_NAME=${AWS_S3_REGION_NAME}  # S3 리전 이름을 환경 변수로 전달합니다.
+      - KMA_API_KEY=${KMA_API_KEY}  # 기상청 API 키를 환경 변수로 전달합니다.
+      - TZ=Asia/Seoul  # 컨테이너의 시간대를 한국 표준시로 설정합니다.
     depends_on:
-      - db
-      - elasticsearch
+      - db  # db 서비스가 먼저 시작되도록 설정합니다.
+      - elasticsearch  # elasticsearch 서비스가 먼저 시작되도록 설정합니다.
     networks:
-      - my_network
+      - my_network  # 컨테이너가 my_network 네트워크에 연결됩니다.
 
   cron:
-    image: alpine:latest
+    image: alpine:latest  # 경량 Alpine Linux 이미지를 사용합니다.
     volumes:
-      - ./han_cycle:/app
-      - ./crontab:/etc/crontabs/root  # crontab 파일을 컨테이너의 crontabs 디렉터리에 마운트
-    entrypoint: ["/bin/sh", "-c", "crond -f"]  # crond를 포그라운드 모드로 실행
+      - ./han_cycle:/app  # 로컬의 han_cycle 디렉토리를 컨테이너의 /app 디렉토리에 마운트합니다.
+      - ./crontab:/etc/crontabs/root  # 로컬의 crontab 파일을 컨테이너의 crontabs 디렉토리에 마운트합니다.
+    entrypoint: ["/bin/sh", "-c", "crond -f"]  # crond 데몬을 포그라운드 모드로 실행합니다.
     environment:
-      - DB_NAME=${DB_NAME}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}  # 데이터베이스 이름을 환경 변수로 전달합니다.
+      - DB_USER=${DB_USER}  # 데이터베이스 사용자 이름을 환경 변수로 전달합니다.
+      - DB_PASSWORD=${DB_PASSWORD}  # 데이터베이스 비밀번호를 환경 변수로 전달합니다.
+      - DB_HOST=${DB_HOST}  # 데이터베이스 호스트를 환경 변수로 전달합니다.
+      - DB_PORT=${DB_PORT}  # 데이터베이스 포트를 환경 변수로 전달합니다.
     networks:
-      - my_network
+      - my_network  # 컨테이너가 my_network 네트워크에 연결됩니다.
 
   db:
-    image: postgres:15.7
+    image: postgres:15.7  # PostgreSQL 15.7 버전 이미지를 사용합니다.
     environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}  # 데이터베이스 이름을 환경 변수로 설정합니다.
+      POSTGRES_USER: ${DB_USER}  # 데이터베이스 사용자 이름을 환경 변수로 설정합니다.
+      POSTGRES_PASSWORD: ${DB_PASSWORD}  # 데이터베이스 비밀번호를 환경 변수로 설정합니다.
     ports:
-      - "5432:5432"
+      - "5432:5432"  # 호스트의 5432 포트를 컨테이너의 5432 포트에 매핑합니다.
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data  # 데이터베이스 데이터를 영구적으로 저장하기 위해 볼륨을 사용합니다.
     networks:
-      - my_network
+      - my_network  # 컨테이너가 my_network 네트워크에 연결됩니다.
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.1  # Elasticsearch 7.17.1 버전 이미지를 사용합니다.
     environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false  # 보안을 비활성화
-      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - discovery.type=single-node  # 단일 노드 모드로 Elasticsearch를 실행합니다.
+      - xpack.security.enabled=false  # 보안 기능을 비활성화합니다.
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g  # Elasticsearch에 사용할 메모리 크기를 설정합니다.
     ulimits:
       memlock:
         soft: -1
-        hard: -1
-    mem_limit: 2g
+        hard: -1  # 메모리 잠금을 무제한으로 설정합니다.
+    mem_limit: 2g  # 컨테이너 메모리 사용을 2GB로 제한합니다.
     ports:
-      - "9200:9200"
-      - "9300:9300"
+      - "9200:9200"  # 호스트의 9200 포트를 컨테이너의 9200 포트에 매핑합니다.
+      - "9300:9300"  # 호스트의 9300 포트를 컨테이너의 9300 포트에 매핑합니다.
     volumes:
-      - es_data:/usr/share/elasticsearch/data
+      - es_data:/usr/share/elasticsearch/data  # Elasticsearch 데이터를 영구적으로 저장하기 위해 볼륨을 사용합니다.
     networks:
-      - my_network
+      - my_network  # 컨테이너가 my_network 네트워크에 연결됩니다.
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:7.17.1
+    image: docker.elastic.co/kibana/kibana:7.17.1  # Kibana 7.17.1 버전 이미지를 사용합니다.
     ports:
-      - "5601:5601"
+      - "5601:5601"  # 호스트의 5601 포트를 컨테이너의 5601 포트에 매핑합니다.
     depends_on:
-      - elasticsearch
+      - elasticsearch  # Elasticsearch 서비스가 먼저 시작되도록 설정합니다.
     networks:
-      - my_network
+      - my_network  # 컨테이너가 my_network 네트워크에 연결됩니다.
 
 volumes:
-  postgres_data:
-  es_data:
+  postgres_data:  # PostgreSQL 데이터를 저장하는 볼륨
+  es_data:  # Elasticsearch 데이터를 저장하는 볼륨
 
 networks:
   my_network:
-    driver: bridge
+    driver: bridge  # 컨테이너 간의 네트워크를 위한 브릿지 드라이버를 사용합니다.

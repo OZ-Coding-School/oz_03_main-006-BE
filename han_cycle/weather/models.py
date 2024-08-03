@@ -12,6 +12,7 @@ class Weather(models.Model):
     TMX = models.FloatField(null=True)  # 일최고기온
     SKY = models.IntegerField(null=True)  # 하늘상태 (정수)
 
+#하늘상태 필터링 코드
     class Meta:
         unique_together = ("location", "fcst_date", "base_time")
 
