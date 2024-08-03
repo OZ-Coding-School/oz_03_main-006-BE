@@ -389,6 +389,7 @@ class NicknameAndProfileImageView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # 닉네임 중복 확인 (현재 사용자 포함)
         if User.objects.filter(nickname=new_nickname).exists():
             return Response(
                 {"detail": "Nickname already exists."},
