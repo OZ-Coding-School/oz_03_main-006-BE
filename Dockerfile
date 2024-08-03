@@ -1,23 +1,29 @@
-# Python 3.11이 설치된 Alpine Linux 3.19
+# Use Python 3.11 on Alpine Linux 3.19
 FROM python:3.11-alpine3.19
 
-# LABEL 명령어는 이미지에 메타데이터를 추가합니다.
+# Add metadata to the image
 LABEL maintainer="han_cycle"
 
-# 환경 변수 PYTHONUNBUFFERED를 1로 설정합니다.
+# Set environment variable to ensure output is not buffered
 ENV PYTHONUNBUFFERED=1
 
-# 로컬 파일 시스템의 requirements.txt 파일을 컨테이너의 /tmp/requirements.txt로 복사합니다.
+# Copy requirements files to the container
 COPY ./requirements.txt /tmp/requirements.txt
 COPY ./requirements.dev.txt /tmp/requirements.dev.txt
+
+# Copy the application code to the container
 COPY ./han_cycle /app
 
+# Set the working directory
 WORKDIR /app
+
+# Expose the application port
 EXPOSE 8000
 
+# Set an argument to differentiate between development and production
 ARG DEV=false
 
-# 패키지 설치 및 파이썬 패키지 설치
+# Install dependencies and create a virtual environment
 RUN apk add --no-cache gcc musl-dev libffi-dev python3-dev netcat-openbsd tzdata && \
     cp /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
     echo "Etc/UTC" > /etc/timezone && \
@@ -30,20 +36,24 @@ RUN apk add --no-cache gcc musl-dev libffi-dev python3-dev netcat-openbsd tzdata
     rm -rf /tmp && \
     adduser --disabled-password --no-create-home django-user
 
-# crontab 파일을 추가하고 권한 설정
+# Add and set up the crontab file
 COPY ./crontab /etc/cron.d/crontab
 RUN chmod 0644 /etc/cron.d/crontab && \
     crontab /etc/cron.d/crontab
 
-#날씨API패키지
+# Install additional dependencies
 RUN pip install xmltodict
+
+# Set the timezone
 RUN apk add --no-cache tzdata && \
     cp /usr/share/zoneinfo/Asia/Seoul /etc/localtime && \
     echo "Asia/Seoul" > /etc/timezone
 
+# Add virtual environment to PATH
 ENV PATH="/py/bin:$PATH"
 
+# Switch to the non-root user
 USER django-user
 
-# 실행 명령어
+# Default command to run the application
 CMD ["sh", "-c", "crond && python manage.py runserver 0.0.0.0:8000"]
