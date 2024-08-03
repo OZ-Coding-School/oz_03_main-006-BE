@@ -8,7 +8,6 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, status
 from rest_framework.decorators import api_view
 
-
 # from rest_framework.decorators import permissions_classes
 from rest_framework.pagination import PageNumberPagination
 
@@ -100,21 +99,22 @@ class PostDetailView(APIView):
         # 이미지를 직렬화합니다.
         image_data = ImageSerializer(images, many=True).data
 
-        session=request.COOKIES.get(f"post_{pk}")
+        session = request.COOKIES.get(f"post_{pk}")
 
         # 응답 데이터를 구성합니다.
         response_data = {
-            f"post_{pk}" : session,
+            f"post_{pk}": session,
             "post": post_data,
             "images": image_data,
         }
-        
-        
+
         # 세션 키를 확인하여 조회수를 한 번만 증가시킵니다.
         if not session:
             Post.objects.filter(pk=pk).update(view_count=F("view_count") + 1)
-            response=JsonResponse(response_data)
-            response.set_cookie(key=f"post_{pk}", value="True", httponly=True, samesite="Lax")
+            response = JsonResponse(response_data)
+            response.set_cookie(
+                key=f"post_{pk}", value="True", httponly=True, samesite="Lax"
+            )
             return response
 
         else:

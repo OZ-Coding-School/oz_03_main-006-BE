@@ -36,9 +36,10 @@ class CommentSerializer(serializers.ModelSerializer):
     def get_profile_image(self, obj):
 
         return (
-            obj.user_id.profile_image.url if obj.user_id.profile_image else None   # User 모델의 프로필 이미지 URL 가져오기
+            obj.user_id.profile_image.url
+            if obj.user_id.profile_image
+            else None  # User 모델의 프로필 이미지 URL 가져오기
         )  # User 모델의 프로필 이미지 URL 가져오기
-
 
 
 # 이미지 시리얼라이저
@@ -80,7 +81,6 @@ class DetailPostSerializer(serializers.ModelSerializer):
         return (
             obj.user_id.profile_image.url if obj.user_id.profile_image else None
         )  # User 모델의 프로필 이미지 URL 가져오기
-    
 
 
 # 게시글 작성 시리얼라이저

@@ -1,24 +1,30 @@
 import datetime
-from rest_framework.permissions import BasePermission, IsAuthenticated
+
 import jwt
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from rest_framework import status
-from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.response import Response
-from rest_framework.views import APIView
+from django.core.mail import send_mail
+from django.urls import reverse
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from .models import RefreshToken
-from .serializers import UserSerializer, PasswordResetConfirmSerializer, PasswordResetRequestSerializer
-from django.urls import reverse
-from django.core.mail import send_mail
+from rest_framework import status
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.parsers import MultiPartParser
+from rest_framework.permissions import BasePermission, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
+from .models import RefreshToken
+from .serializers import (
+    PasswordResetConfirmSerializer,
+    PasswordResetRequestSerializer,
+    UserSerializer,
+)
 
 User = get_user_model()
 
-#회원가입으로 사용자 생성
+
+# 회원가입으로 사용자 생성
 class RegisterView(APIView):
     @swagger_auto_schema(
         request_body=UserSerializer, responses={201: UserSerializer, 400: "Bad Request"}
@@ -33,14 +39,19 @@ class RegisterView(APIView):
         serializer.save()
         return Response(serializer.data, status=201)
 
-#로그인 (닉네임과 비밀번호로 사용자 인증)
+
+# 로그인 (닉네임과 비밀번호로 사용자 인증)
 class LoginView(APIView):
     @swagger_auto_schema(
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                "nickname": openapi.Schema(type=openapi.TYPE_STRING, description="User nickname"),
-                "password": openapi.Schema(type=openapi.TYPE_STRING, description="User password"),
+                "nickname": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="User nickname"
+                ),
+                "password": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="User password"
+                ),
             },
             required=["nickname", "password"],
         ),
@@ -100,12 +111,23 @@ class LoginView(APIView):
                 "username": user.username,
             }
         )
-        response.set_cookie(key="jwt", value=access_token, httponly=True, expires=datetime.datetime.utcnow() + datetime.timedelta(days=7))
-        response.set_cookie(key="refresh_token", value=str(refresh_token.token), httponly=True, expires=expires_at)
+        response.set_cookie(
+            key="jwt",
+            value=access_token,
+            httponly=True,
+            expires=datetime.datetime.utcnow() + datetime.timedelta(days=7),
+        )
+        response.set_cookie(
+            key="refresh_token",
+            value=str(refresh_token.token),
+            httponly=True,
+            expires=expires_at,
+        )
 
         return response
 
-#사용자 정보 조회
+
+# 사용자 정보 조회
 class UserView(APIView):
     @swagger_auto_schema(responses={200: UserSerializer, 401: "Unauthenticated"})
     def get(self, request):
@@ -114,7 +136,7 @@ class UserView(APIView):
         - JWT 토큰을 통해 인증된 사용자 정보 반환
         """
         token = request.COOKIES.get("jwt")
-    # JWT 토큰 검증을 통해 사용자 정보 조회
+        # JWT 토큰 검증을 통해 사용자 정보 조회
         if not token:
             raise AuthenticationFailed("Unauthenticated!")
 
@@ -128,8 +150,9 @@ class UserView(APIView):
 
         return Response(serializer.data)
 
+
 # 로그아웃
-#JWT 및 리프레쉬 토큰 쿠키 삭제
+# JWT 및 리프레쉬 토큰 쿠키 삭제
 class LogoutView(APIView):
     @swagger_auto_schema(responses={200: "성공적으로 로그아웃이 되었습니다"})
     def post(self, request):
@@ -143,7 +166,8 @@ class LogoutView(APIView):
         response.data = {"message": "성공적으로 로그아웃이 되었습니다"}
         return response
 
-#리프레쉬 토큰 (엑세스 토큰 재발급)
+
+# 리프레쉬 토큰 (엑세스 토큰 재발급)
 class RefreshTokenView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -152,7 +176,9 @@ class RefreshTokenView(APIView):
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                "refresh_token": openapi.Schema(type=openapi.TYPE_STRING, description="리프레시 토큰"),
+                "refresh_token": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="리프레시 토큰"
+                ),
             },
             required=["refresh_token"],
         ),
@@ -184,25 +210,27 @@ class RefreshTokenView(APIView):
 
         return Response({"access_token": new_access_token}, status=200)
 
-#쿠키 인증 (비밀번호 재설정을 위한 토큰 인증)
+
+# 쿠키 인증 (비밀번호 재설정을 위한 토큰 인증)
 class CookieAuthentication(BasePermission):
     def has_permission(self, request, view):
-        token = request.COOKIES.get('jwt')
+        token = request.COOKIES.get("jwt")
         if not token:
             return False
-        
+
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            request.user = User.objects.get(id=payload['id'])
+            request.user = User.objects.get(id=payload["id"])
             return True
         except jwt.ExpiredSignatureError:
-            raise AuthenticationFailed(_('Token has expired.'))
+            raise AuthenticationFailed(_("Token has expired."))
         except jwt.InvalidTokenError:
-            raise AuthenticationFailed(_('Invalid token.'))
+            raise AuthenticationFailed(_("Invalid token."))
         except User.DoesNotExist:
-            raise AuthenticationFailed(_('User not found.'))
+            raise AuthenticationFailed(_("User not found."))
 
         return False
+
 
 # 계정 삭제 (JWT 쿠키 및 사용자 계정 삭제)
 class DeleteAccountView(APIView):
@@ -234,15 +262,18 @@ class DeleteAccountView(APIView):
             user = User.objects.get(id=payload["id"])
         except jwt.ExpiredSignatureError:
             return Response(
-                {"detail": "토큰이 만료되었습니다."}, status=status.HTTP_401_UNAUTHORIZED
+                {"detail": "토큰이 만료되었습니다."},
+                status=status.HTTP_401_UNAUTHORIZED,
             )
         except jwt.InvalidTokenError:
             return Response(
-                {"detail": "유효하지 않은 토큰입니다."}, status=status.HTTP_401_UNAUTHORIZED
+                {"detail": "유효하지 않은 토큰입니다."},
+                status=status.HTTP_401_UNAUTHORIZED,
             )
         except User.DoesNotExist:
             return Response(
-                {"detail": "사용자를 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND
+                {"detail": "사용자를 찾을 수 없습니다."},
+                status=status.HTTP_404_NOT_FOUND,
             )
 
         user.delete()
@@ -255,7 +286,9 @@ class DeleteAccountView(APIView):
 
         return response
 
-#비밀번호 재설정 요청
+
+# 비밀번호 재설정 요청
+
 
 class PasswordResetRequestView(APIView):
     def post(self, request):
@@ -293,8 +326,8 @@ class PasswordResetRequestView(APIView):
         return Response({"reset_url": reset_url})
 
 
-#비밀번호 재설정 링크
-#토큰 유효성 검증으로 비밀번호 변경 가능
+# 비밀번호 재설정 링크
+# 토큰 유효성 검증으로 비밀번호 변경 가능
 class PasswordResetConfirmView(APIView):
     @swagger_auto_schema(
         operation_description="비밀번호 재설정 API - 비밀번호 재설정 링크를 통해 비밀번호를 변경",
@@ -314,22 +347,31 @@ class PasswordResetConfirmView(APIView):
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
         except jwt.ExpiredSignatureError:
-            return Response({"detail": "Token has expired."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Token has expired."}, status=status.HTTP_400_BAD_REQUEST
+            )
         except jwt.InvalidTokenError:
-            return Response({"detail": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         user = User.objects.filter(id=payload["id"], email=payload["email"]).first()
         if not user:
-            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND
+            )
 
         user.set_password(new_password)
         user.save()
 
         return Response({"detail": "Password has been reset successfully."})
 
-#닉네임 및 프로필 이미지 업데이트
+
+# 닉네임 및 프로필 이미지 업데이트
 class NicknameAndProfileImageView(APIView):
-    parser_classes = [MultiPartParser]  # MultiPartParser를 사용하여 파일 업로드를 지원합니다.
+    parser_classes = [
+        MultiPartParser
+    ]  # MultiPartParser를 사용하여 파일 업로드를 지원합니다.
 
     @swagger_auto_schema(
         operation_description="닉네임 및 프로필 이미지 변경 API - JWT 토큰을 통해 인증된 사용자만 사용 가능. 요청 데이터에서 새로운 닉네임과 프로필 이미지를 받아 업데이트합니다.",
@@ -372,15 +414,18 @@ class NicknameAndProfileImageView(APIView):
             user = User.objects.get(id=payload["id"])
         except jwt.ExpiredSignatureError:
             return Response(
-                {"detail": "토큰이 만료되었습니다."}, status=status.HTTP_401_UNAUTHORIZED
+                {"detail": "토큰이 만료되었습니다."},
+                status=status.HTTP_401_UNAUTHORIZED,
             )
         except jwt.InvalidTokenError:
             return Response(
-                {"detail": "유효하지 않은 토큰입니다."}, status=status.HTTP_401_UNAUTHORIZED
+                {"detail": "유효하지 않은 토큰입니다."},
+                status=status.HTTP_401_UNAUTHORIZED,
             )
         except User.DoesNotExist:
             return Response(
-                {"detail": "사용자를 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND
+                {"detail": "사용자를 찾을 수 없습니다."},
+                status=status.HTTP_404_NOT_FOUND,
             )
 
         new_nickname = request.data.get("nickname")
@@ -409,6 +454,9 @@ class NicknameAndProfileImageView(APIView):
 
         serializer = UserSerializer(user)
         return Response(
-            {"detail": "닉네임 및 프로필 이미지가 성공적으로 업데이트되었습니다.", "user": serializer.data},
+            {
+                "detail": "닉네임 및 프로필 이미지가 성공적으로 업데이트되었습니다.",
+                "user": serializer.data,
+            },
             status=status.HTTP_200_OK,
         )
