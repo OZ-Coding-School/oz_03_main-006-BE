@@ -30,11 +30,13 @@ from .serializers import (
 @api_view(["GET", "POST"])
 def posts(request):
     if request.method == "GET":
+        # 모든 게시물을 조회하여 리스트를 반환
         posts = get_list_or_404(Post)
         serializer = PostListSerializer(posts, many=True)
         return Response(serializer.data)
 
     elif request.method == "POST":
+        # 게시물 생성 요청을 처리
         serializer = PostSerializer(data=request.data)
         if serializer.is_valid():
             post = serializer.save()
@@ -46,6 +48,7 @@ def posts(request):
             )
             for image_id in temp_image_ids:
                 try:
+                    #이미지의 board를 post_id로 연결
                     image = Image.objects.get(id=image_id)
                     image.board = post
                     image.save()
@@ -70,6 +73,8 @@ def posts(request):
         )
     ],
 )
+
+# 특정 사용자의 게시물 목록을 조회
 @api_view(["GET"])
 def GetUserPost(request, user_id):
     if request.method == "GET":
@@ -77,7 +82,7 @@ def GetUserPost(request, user_id):
         serializer = PostListSerializer(user_posts, many=True)
         return Response(serializer.data)
 
-
+#게시물 상세 조회
 class PostDetailView(APIView):
     @swagger_auto_schema(
         operation_description="게시물 상세 조회",
@@ -87,28 +92,22 @@ class PostDetailView(APIView):
         },
     )
     def get(self, request, pk):
-        # pk 값을 사용하여 특정 게시물을 가져옵니다.
+        # pk 값을 사용하여 특정 게시물과 연결된 이미지르를 가져와 직렬화
         post = get_object_or_404(Post, pk=pk)
-
-        # 게시물에 연결된 이미지를 가져옵니다.
         images = Image.objects.filter(board=pk)
-
-        # 게시물 데이터를 직렬화합니다.
         post_data = DetailPostSerializer(post).data
-
-        # 이미지를 직렬화합니다.
         image_data = ImageSerializer(images, many=True).data
 
         session = request.COOKIES.get(f"post_{pk}")
 
-        # 응답 데이터를 구성합니다.
+        # 응답 데이터를 구성
         response_data = {
             f"post_{pk}": session,
             "post": post_data,
             "images": image_data,
         }
 
-        # 세션 키를 확인하여 조회수를 한 번만 증가시킵니다.
+        # 쿠키를 확인하고 없는 경우 쿠키를 저장하고 조회수 증가
         if not session:
             Post.objects.filter(pk=pk).update(view_count=F("view_count") + 1)
             response = JsonResponse(response_data)
@@ -118,37 +117,28 @@ class PostDetailView(APIView):
             return response
 
         else:
-            # JSON 형식으로 응답합니다.
             return JsonResponse(response_data)
 
+    #게시물 삭제
     @swagger_auto_schema(responses={204: "No Content"})
     def delete(self, request, pk):
-        # pk 값을 사용하여 특정 게시물을 가져옵니다.
         post = get_object_or_404(Post, pk=pk)
-
-        # 게시물을 삭제합니다.
         post.delete()
-
-        # 204 No Content 상태로 응답합니다.
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @swagger_auto_schema(
         request_body=PostSerializer,
         responses={200: PostSerializer, 400: "Bad Request", 404: "Not Found"},
     )
+    #게시글 수정
     def put(self, request, pk):
-        # pk 값을 사용하여 특정 게시물을 가져옵니다.
         post = get_object_or_404(Post, pk=pk)
-
-        # 요청 데이터를 사용하여 게시물을 직렬화합니다.
         serializer = PostSerializer(post, data=request.data, partial=True)
 
-        # 직렬화된 데이터가 유효한 경우
         if serializer.is_valid():
-            # 게시물을 저장합니다.
             serializer.save()
 
-            # 임시 이미지 ID를 가져와 처리합니다.
+            # 임시 이미지 ID를 가져와 처리
             temp_image_ids_str = request.data.get("temp_image_ids", "")
             temp_image_ids = (
                 list(map(int, temp_image_ids_str.split(",")))
@@ -157,7 +147,7 @@ class PostDetailView(APIView):
             )
             for image_id in temp_image_ids:
                 try:
-                    # 이미지를 가져와 게시물에 연결합니다.
+                    # 이미지를 가져와 게시물에 연결
                     image = Image.objects.get(id=image_id)
                     image.board = post
                     image.save()
@@ -165,14 +155,14 @@ class PostDetailView(APIView):
                 except Image.DoesNotExist:
                     pass
 
-            # 업데이트된 게시물을 직렬화합니다.
+            # 업데이트된 게시물을 직렬화
             updated_serializer = PostSerializer(post)
             return Response(updated_serializer.data, status=status.HTTP_200_OK)
 
-        # 직렬화된 데이터가 유효하지 않은 경우 오류 응답을 반환합니다.
+        # 직렬화된 데이터가 유효하지 않은 경우 오류 응답을 반환
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+#전체 댓글 목록 조회
 class CommentListView(APIView):
     @swagger_auto_schema(
         operation_description="전체 댓글 목록 조회",
@@ -183,7 +173,7 @@ class CommentListView(APIView):
         serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data)
 
-
+#댓글작성
 class CommentCreateView(APIView):
     @swagger_auto_schema(
         request_body=CommentSerializer,
@@ -197,7 +187,7 @@ class CommentCreateView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+#상세 댓글 조회, 수정, 삭제
 class CommentDetailView(APIView):
     @swagger_auto_schema(
         operation_description="댓글 조회, 수정 및 삭제",
@@ -231,7 +221,7 @@ class CommentDetailView(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+#게시글 본문 이미지 s3 버킷에 올리고 url로 반환
 class UploadImageView(APIView):
     @swagger_auto_schema(
         request_body=openapi.Schema(
@@ -283,6 +273,7 @@ class LikeView(APIView):
             400: "Bad Request",
         },
     )
+    #좋아요
     def post(self, request, pk):
         post = get_object_or_404(Post, pk=pk)
         # user = request.user
@@ -293,6 +284,7 @@ class LikeView(APIView):
                 {"error": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST
             )
 
+        #좋아요가 있으면 좋아요를 취소하고 없으면 좋아요 생성
         try:
             like = Like.objects.get(user_id=user_id, post=post)
             like.delete()
@@ -321,6 +313,7 @@ class LikeView(APIView):
             404: "Not Found",
         },
     )
+    #좋아요 유무 조회
     def get(self, request, pk):
         post = get_object_or_404(Post, pk=pk)
         user_id = request.query_params.get(
@@ -356,17 +349,16 @@ class LikeView(APIView):
         )
     ],
 )
+
+#사용자별 좋아요 게시물 목록 조회
 @api_view(["GET"])
 def liked_posts(request, user_id):
     user = get_object_or_404(User, pk=user_id)
 
-    # 해당 사용자가 좋아요한 모든 Like 객체를 가져옴
+    # 해당 사용자가 좋아요한 모든 Like 객체를 가져오고, 해당 객체에서 Post_id를 가져와 게시물 목록 가져옴
     user_likes = Like.objects.filter(user=user)
-
-    # Like 객체에서 Post 객체들의 ID를 가져옴
     liked_post_ids = user_likes.values_list("post_id", flat=True)
 
-    # 해당 ID들을 사용하여 게시물 가져오기
     liked_posts = Post.objects.filter(id__in=liked_post_ids)
 
     serializer = PostListSerializer(liked_posts, many=True)
