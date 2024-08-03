@@ -1,0 +1,27 @@
+django>=4.2.0,<4.3.0
+djangorestframework>=3.14.0,<4.0.0
+psycopg2-binary
+requests
+cryptography
+python-dotenv #.env file
+social-auth-app-django #allauth social login
+django-storages >= 1.14.0
+boto3 == 1.34.144
+pillow
+drf-yasg #swagger
+PyJWT #API token
+django-cors-headers #for the case, front-end has different port than django
+django-tinymce
+django-cors-headers
+setuptools
+elasticsearch-dsl #검색 파이썬에서 엘라스틱서치를 더 잘 이용하게하는 라이브러리
+retrying #검색앱이 실행될떄까지 app재실행
+django-crontab #날씨
+requests==2.26.0 #날씨
+retrying==1.3.3 #엘라스틱 웨이팅
+xmltodict #날씨
+requests #스크래핑
+beautifulsoup4 #스크래핑
+tzdata>=2024.1 #시간
+elasticsearch>=7.10.0 #검색엔잔
+djangorestframework-simplejwt # JWT authentication
