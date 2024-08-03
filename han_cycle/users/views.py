@@ -369,24 +369,26 @@ class PasswordResetConfirmView(APIView):
 
 # 닉네임 및 프로필 이미지 업데이트
 class NicknameAndProfileImageView(APIView):
-    parser_classes = [
-        MultiPartParser
-    ]  # MultiPartParser를 사용하여 파일 업로드를 지원합니다.
+    parser_classes = [MultiPartParser]
 
     @swagger_auto_schema(
         operation_description="닉네임 및 프로필 이미지 변경 API - JWT 토큰을 통해 인증된 사용자만 사용 가능. 요청 데이터에서 새로운 닉네임과 프로필 이미지를 받아 업데이트합니다.",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                "nickname": openapi.Schema(
-                    type=openapi.TYPE_STRING, description="새로운 닉네임"
-                ),
-                "profile_image": openapi.Schema(
-                    type=openapi.TYPE_FILE, description="새로운 프로필 이미지 파일"
-                ),
-            },
-            required=["nickname"],
-        ),
+        manual_parameters=[
+            openapi.Parameter(
+                "nickname",
+                openapi.IN_FORM,
+                description="새로운 닉네임",
+                type=openapi.TYPE_STRING,
+                required=True,
+            ),
+            openapi.Parameter(
+                "profile_image",
+                openapi.IN_FORM,
+                description="새로운 프로필 이미지 파일",
+                type=openapi.TYPE_FILE,
+                required=False,
+            ),
+        ],
         responses={
             200: openapi.Response(
                 description="닉네임 및 프로필 이미지가 성공적으로 업데이트되었습니다.",
