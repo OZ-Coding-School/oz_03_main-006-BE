@@ -1,4 +1,4 @@
-#version: "3.11"
+version: "3.11"
 services:
   app:
     build:
@@ -9,8 +9,7 @@ services:
       - "8000:8000"
     volumes:
       - ./han_cycle:/app
-    command: sh -c "python manage.py migrate && 
-          python manage.py runserver 0.0.0.0:8000"
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     environment:
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
@@ -29,18 +28,23 @@ services:
     networks:
       - my_network
 
-  cron:
-    image: alpine:latest
+  test:
+    build:
+      context: .
+      args:
+        - DEV=true
     volumes:
       - ./han_cycle:/app
-      - ./crontab:/etc/crontabs/root  # crontab 파일을 컨테이너의 crontabs 디렉터리에 마운트
-    entrypoint: ["/bin/sh", "-c", "crond -f"]  # crond를 포그라운드 모드로 실행
+    command: sh -c "python manage.py migrate && python manage.py test"
     environment:
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT}
+    depends_on:
+      - db
+      - elasticsearch
     networks:
       - my_network
 
@@ -61,7 +65,7 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.17.1
     environment:
       - discovery.type=single-node
-      - xpack.security.enabled=false  # 보안을 비활성화
+      - xpack.security.enabled=false  # Disable security
       - ES_JAVA_OPTS=-Xms1g -Xmx1g
     ulimits:
       memlock:
