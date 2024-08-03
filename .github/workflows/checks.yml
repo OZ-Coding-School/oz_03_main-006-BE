@@ -2,12 +2,7 @@
 ---
     name : Checks #Workflow 이름
     
-    on : 
-      push : 
-        paths-ignore:
-          - 'README.md'  # README.md 파일 변경 시 워크플로우 실행 제외
-          - 'images/**'  # images 디렉토리 내 파일 변경 시 워크플로우 실행 제외
-
+    on : [push]
     
     jobs :
       test-link :
