@@ -34,5 +34,5 @@ urlpatterns = [
     ),  # 비밀번호 재설정 확인
     path(
         "accounts/edit", NicknameAndProfileImageView.as_view(), name="edit"
-    ),  # nickname and profile image change
+    ),  # 닉네임 및 프로필 이미지 업데이트
 ]

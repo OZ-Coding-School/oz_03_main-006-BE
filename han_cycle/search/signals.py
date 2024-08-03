@@ -1,9 +1,12 @@
 from django.apps import apps
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
-from elasticsearch_dsl import DocumentNotFoundError
+from elasticsearch import Elasticsearch
+from elasticsearch.exceptions import NotFoundError
 
 from .search_index import LocationIndex, PostIndex, UserIndex
+
+# Elasticsearch 인덱스에서 문서를 검색하려고 시도했지만, 해당 문서가 존재하지 않거나 삭제된 경우에 이 예외 발생
 
 
 # 게시글(Post) 모델의 저장 후 신호를 처리하는 수신기
