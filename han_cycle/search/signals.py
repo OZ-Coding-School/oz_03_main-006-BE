@@ -15,7 +15,7 @@ def index_post(sender, instance, **kwargs):
     post_index = PostIndex(
         meta={"id": instance.id},  # 인덱스 ID 설정
         title=instance.title,  # 게시글 제목
-        content=instance.content,  # 게시글 내용
+        body=instance.body,  # 게시글 내용
     )
     post_index.save()
 
