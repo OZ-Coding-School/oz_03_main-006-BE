@@ -3,6 +3,8 @@ from django.conf import settings
 from django.db.models import F
 from django.http import JsonResponse
 from django.shortcuts import get_list_or_404, get_object_or_404
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, status
@@ -118,8 +120,10 @@ class PostDetailView(APIView):
 
         else:
             return JsonResponse(response_data)
-
+          
+          
     #게시물 삭제
+    @method_decorator(csrf_exempt)
     @swagger_auto_schema(responses={204: "No Content"})
     def delete(self, request, pk):
         post = get_object_or_404(Post, pk=pk)

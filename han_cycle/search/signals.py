@@ -2,7 +2,7 @@ from django.apps import apps
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from elasticsearch import Elasticsearch
-from elasticsearch.exceptions import NotFoundError
+from elasticsearch.exceptions import NotFoundError as DocumentNotFoundError
 
 from .search_index import LocationIndex, PostIndex, UserIndex
 
