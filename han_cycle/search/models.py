@@ -7,7 +7,7 @@ connections.create_connection(hosts=["http://elasticsearch:9200"])
 # 게시글을 Elasticsearch에 저장하기 위한 인덱스 정의
 class PostIndex(Document):
     title = Text()  # 제목 필드 (Elasticsearch의 Text 타입)
-    content = Text()  # 내용 필드 (Elasticsearch의 Text 타입)
+    body = Text()  # 내용 필드 (Elasticsearch의 Text 타입)
     created_at = Date()  # 생성 날짜 필드 (Elasticsearch의 Date 타입)
 
     class Index:
