@@ -51,7 +51,7 @@ def posts(request):
             )
             for image_id in temp_image_ids:
                 try:
-                    #이미지의 board를 post_id로 연결
+                    # 이미지의 board를 post_id로 연결
                     image = Image.objects.get(id=image_id)
                     image.board = post
                     image.save()
@@ -61,6 +61,7 @@ def posts(request):
             updated_serializer = PostSerializer(post)
             return Response(updated_serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @csrf_exempt  # 함수형 뷰에서 CSRF 비활성화
 @swagger_auto_schema(
@@ -86,10 +87,10 @@ def GetUserPost(request, user_id):
         return Response(serializer.data)
 
 
-#게시물 상세 조회
+# 게시물 상세 조회
 
-@method_decorator(csrf_exempt, name='dispatch')  # 클래스 기반 뷰 전체에서 CSRF 비활성화
 
+@method_decorator(csrf_exempt, name="dispatch")  # 클래스 기반 뷰 전체에서 CSRF 비활성화
 class PostDetailView(APIView):
     @swagger_auto_schema(
         operation_description="게시물 상세 조회",
@@ -125,9 +126,8 @@ class PostDetailView(APIView):
 
         else:
             return JsonResponse(response_data)
-          
-          
-    #게시물 삭제
+
+    # 게시물 삭제
     @method_decorator(csrf_exempt)
     @swagger_auto_schema(responses={204: "No Content"})
     def delete(self, request, pk):
@@ -139,7 +139,7 @@ class PostDetailView(APIView):
         request_body=PostSerializer,
         responses={200: PostSerializer, 400: "Bad Request", 404: "Not Found"},
     )
-    #게시글 수정
+    # 게시글 수정
     def put(self, request, pk):
         post = get_object_or_404(Post, pk=pk)
         serializer = PostSerializer(post, data=request.data, partial=True)
@@ -172,10 +172,10 @@ class PostDetailView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-#전체 댓글 목록 조회
+# 전체 댓글 목록 조회
 
-@method_decorator(csrf_exempt, name='dispatch')  # 클래스 기반 뷰 전체에서 CSRF 비활성화
 
+@method_decorator(csrf_exempt, name="dispatch")  # 클래스 기반 뷰 전체에서 CSRF 비활성화
 class CommentListView(APIView):
     @swagger_auto_schema(
         operation_description="전체 댓글 목록 조회",
@@ -186,10 +186,11 @@ class CommentListView(APIView):
         serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data)
 
-#댓글작성
 
-@method_decorator(csrf_exempt, name='dispatch')  # 클래스 기반 뷰 전체에서 CSRF 비활성화
+# 댓글작성
 
+
+@method_decorator(csrf_exempt, name="dispatch")  # 클래스 기반 뷰 전체에서 CSRF 비활성화
 class CommentCreateView(APIView):
     @swagger_auto_schema(
         request_body=CommentSerializer,
@@ -204,10 +205,8 @@ class CommentCreateView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-#상세 댓글 조회, 수정, 삭제
-=======
-@method_decorator(csrf_exempt, name='dispatch')  # 클래스 기반 뷰 전체에서 CSRF 비활성화
-
+# 상세 댓글 조회, 수정, 삭제
+@method_decorator(csrf_exempt, name="dispatch")  # 클래스 기반 뷰 전체에서 CSRF 비활성화
 class CommentDetailView(APIView):
     @swagger_auto_schema(
         operation_description="댓글 조회, 수정 및 삭제",
@@ -242,10 +241,10 @@ class CommentDetailView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-#게시글 본문 이미지 s3 버킷에 올리고 url로 반환
+# 게시글 본문 이미지 s3 버킷에 올리고 url로 반환
 
-@method_decorator(csrf_exempt, name='dispatch')  # 클래스 기반 뷰 전체에서 CSRF 비활성화
 
+@method_decorator(csrf_exempt, name="dispatch")  # 클래스 기반 뷰 전체에서 CSRF 비활성화
 class UploadImageView(APIView):
     @swagger_auto_schema(
         request_body=openapi.Schema(
@@ -277,7 +276,8 @@ class UploadImageView(APIView):
             status=status.HTTP_201_CREATED,
         )
 
-@method_decorator(csrf_exempt, name='dispatch')  # 클래스 기반 뷰 전체에서 CSRF 비활성화
+
+@method_decorator(csrf_exempt, name="dispatch")  # 클래스 기반 뷰 전체에서 CSRF 비활성화
 class LikeView(APIView):
     # permission_classes = [IsAuthenticated]
     @swagger_auto_schema(
@@ -297,7 +297,7 @@ class LikeView(APIView):
             400: "Bad Request",
         },
     )
-    #좋아요
+    # 좋아요
     def post(self, request, pk):
         post = get_object_or_404(Post, pk=pk)
         # user = request.user
@@ -308,7 +308,7 @@ class LikeView(APIView):
                 {"error": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        #좋아요가 있으면 좋아요를 취소하고 없으면 좋아요 생성
+        # 좋아요가 있으면 좋아요를 취소하고 없으면 좋아요 생성
         try:
             like = Like.objects.get(user_id=user_id, post=post)
             like.delete()
@@ -337,7 +337,7 @@ class LikeView(APIView):
             404: "Not Found",
         },
     )
-    #좋아요 유무 조회
+    # 좋아요 유무 조회
     def get(self, request, pk):
         post = get_object_or_404(Post, pk=pk)
         user_id = request.query_params.get(
@@ -374,7 +374,7 @@ class LikeView(APIView):
     ],
 )
 
-#사용자별 좋아요 게시물 목록 조회
+# 사용자별 좋아요 게시물 목록 조회
 @api_view(["GET"])
 def liked_posts(request, user_id):
     user = get_object_or_404(User, pk=user_id)
