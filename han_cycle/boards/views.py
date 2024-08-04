@@ -29,6 +29,7 @@ from .serializers import (
 
 
 # 게시물 작성(post), 전체 게시물 리스트 조회(get)
+@csrf_exempt  # 함수형 뷰에서 CSRF 비활성화
 @api_view(["GET", "POST"])
 def posts(request):
     if request.method == "GET":
@@ -58,7 +59,7 @@ def posts(request):
             return Response(updated_serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+@csrf_exempt  # 함수형 뷰에서 CSRF 비활성화
 @swagger_auto_schema(
     method="get",
     operation_description="Retrieve a list of posts for a specific user.",
@@ -79,7 +80,7 @@ def GetUserPost(request, user_id):
         serializer = PostListSerializer(user_posts, many=True)
         return Response(serializer.data)
 
-
+@method_decorator(csrf_exempt, name='dispatch')  # 클래스 기반 뷰 전체에서 CSRF 비활성화
 class PostDetailView(APIView):
     @swagger_auto_schema(
         operation_description="게시물 상세 조회",
@@ -175,7 +176,7 @@ class PostDetailView(APIView):
         # 직렬화된 데이터가 유효하지 않은 경우 오류 응답을 반환합니다.
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+@method_decorator(csrf_exempt, name='dispatch')  # 클래스 기반 뷰 전체에서 CSRF 비활성화
 class CommentListView(APIView):
     @swagger_auto_schema(
         operation_description="전체 댓글 목록 조회",
@@ -186,7 +187,7 @@ class CommentListView(APIView):
         serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data)
 
-
+@method_decorator(csrf_exempt, name='dispatch')  # 클래스 기반 뷰 전체에서 CSRF 비활성화
 class CommentCreateView(APIView):
     @swagger_auto_schema(
         request_body=CommentSerializer,
@@ -200,7 +201,7 @@ class CommentCreateView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+@method_decorator(csrf_exempt, name='dispatch')  # 클래스 기반 뷰 전체에서 CSRF 비활성화
 class CommentDetailView(APIView):
     @swagger_auto_schema(
         operation_description="댓글 조회, 수정 및 삭제",
@@ -234,7 +235,7 @@ class CommentDetailView(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+@method_decorator(csrf_exempt, name='dispatch')  # 클래스 기반 뷰 전체에서 CSRF 비활성화
 class UploadImageView(APIView):
     @swagger_auto_schema(
         request_body=openapi.Schema(
@@ -266,7 +267,7 @@ class UploadImageView(APIView):
             status=status.HTTP_201_CREATED,
         )
 
-
+@method_decorator(csrf_exempt, name='dispatch')  # 클래스 기반 뷰 전체에서 CSRF 비활성화
 class LikeView(APIView):
     # permission_classes = [IsAuthenticated]
     @swagger_auto_schema(

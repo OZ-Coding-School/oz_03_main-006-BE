@@ -201,6 +201,8 @@ AUTHENTICATION_BACKENDS = [
 
 CSRF_TRUSTED_ORIGINS = [
     "https://api.hancycle.site",
+    "http://localhost:8000/swagger/",
+    "https://hancycle.site",
 ]
 
 # 이메일 백엔드 설정: Gmail SMTP 서버를 사용하여 이메일을 전송합니다.
